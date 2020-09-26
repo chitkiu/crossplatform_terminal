@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/color_constants.dart';
-import 'package:flutter_app/screens/main_screen.dart';
+import 'color_constants.dart';
+
+import 'presentation/screens/main_screen.dart';
 
 void main() {
   runApp(MyApp());

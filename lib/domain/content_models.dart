@@ -8,19 +8,19 @@ abstract class ContentModel {
 }
 
 class SSHConnectionModel extends ContentModel {
-  SSHConnectionModel({
+  SSHConnectionModel(title, {
     @required this.sshHost,
     @required this.sshPort,
     @required this.sshUsername,
     this.sshPassword,
     this.sshPrivateKey
-  }) : super(sshHost) {
+  }) : super(title) {
     assert (sshHost != null);
     assert (sshHost.isNotEmpty);
     assert (sshPort != null);
     assert (sshPort > 0);
-    assert (sshUsername != null);
-    assert (sshUsername.isNotEmpty);
+    // assert (sshUsername != null);
+    // assert (sshUsername.isNotEmpty);
   }
 
   final String sshHost;
@@ -29,17 +29,27 @@ class SSHConnectionModel extends ContentModel {
   final String sshPassword;
   final String sshPrivateKey;
 
+  factory SSHConnectionModel.fromJSON(dynamic json) {
+    return SSHConnectionModel(
+      json['name'] as String,
+      sshHost: json['host'] as String,
+      sshPort: json['port'] as int,
+      sshUsername: json['username'] as String ?? '',
+      sshPassword: json['password'] as String ?? '',
+    );
+  }
+
 }
 
 class FTPConnectionModel extends ContentModel {
-  FTPConnectionModel({
+  FTPConnectionModel(title, {
     @required this.host,
     @required this.port,
     @required this.username,
     this.password,
     this.privateKey,
     this.startDir,
-  }) : super(host) {
+  }) : super(title) {
     assert (host != null);
     assert (host.isNotEmpty);
     assert (port != null);

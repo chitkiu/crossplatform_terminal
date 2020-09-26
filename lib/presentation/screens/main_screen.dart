@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_app/color_constants.dart';
-import 'package:flutter_app/domain/repositories/base_model_repository.dart';
-import 'package:flutter_app/domain/repositories/ftp_model_repository.dart';
-import 'package:flutter_app/domain/repositories/ssh_model_repository.dart';
-import 'package:flutter_app/presentation/click_listener.dart';
-import 'package:flutter_app/presentation/list_child_provider.dart';
+import '../../data/api/http_requests.dart';
+
+import '../../color_constants.dart';
+import '../click_listener.dart';
+import '../list_child_provider.dart';
+import '../../domain/repositories/base_model_repository.dart';
+import '../../domain/repositories/ftp_model_repository.dart';
+import '../../domain/repositories/ssh_model_repository.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -14,8 +18,9 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<StatefulWidget> {
 
   ModelRepository _repo;
-  ClickListener _clickListener;
   ListChildProvider _listChildProvider;
+
+  StreamSubscription _disposable;
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +49,15 @@ class _MainScreenState extends State<StatefulWidget> {
                         )
                     ),
                     onTap: () {
-                      setState(() {
-                        _repo = SSHModelRepository();
-                        _clickListener = SSHClickListener();
-                        _listChildProvider = SSHChildProvider();
+                      var api = HttpApiRequests(
+                          scheme: "http",
+                          host: "localhost:8080"
+                      );
+                      _setSSHState();
+                      _disposable = api.getServers().listen((event) {
+                        setState(() {
+                          _repo.setModels(event);
+                        });
                       });
                       Navigator.pop(context);
                     },
@@ -61,11 +71,7 @@ class _MainScreenState extends State<StatefulWidget> {
                       ),
                     ),
                     onTap: () {
-                      setState(() {
-                        _repo = FTPModelRepository();
-                        _clickListener = FTPClickListener();
-                        _listChildProvider = FTPChildProvider();
-                      });
+                      _setFTPState();
                       Navigator.pop(context);
                     },
                   ),
@@ -85,8 +91,32 @@ class _MainScreenState extends State<StatefulWidget> {
 
   @override
   void initState() {
+    super.initState();
+    _disposable = null;
     _repo = SSHModelRepository();
-    _clickListener = SSHClickListener();
     _listChildProvider = SSHChildProvider();
+  }
+
+  void _cancelDisposable() {
+    if(_disposable != null) {
+      _disposable.cancel();
+      _disposable = null;
+    }
+  }
+
+  void _setSSHState() {
+    _cancelDisposable();
+    setState(() {
+      _repo = SSHModelRepository();
+      _listChildProvider = SSHChildProvider();
+    });
+  }
+
+  void _setFTPState() {
+    _cancelDisposable();
+    setState(() {
+      _repo = FTPModelRepository();
+      _listChildProvider = FTPChildProvider();
+    });
   }
 }

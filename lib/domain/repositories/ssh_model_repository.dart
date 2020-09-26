@@ -1,11 +1,11 @@
-import 'package:flutter_app/domain/content_models.dart';
-import 'package:flutter_app/domain/repositories/ssh_key.dart';
-
+import '../content_models.dart';
 import 'base_model_repository.dart';
+import 'ssh_key.dart';
 
 class SSHModelRepository extends ModelRepository {
   SSHModelRepository(): super() {
     _models.add(SSHConnectionModel(
+      "Hetzner Database",
       sshHost: 'database.aether-project.games',
       sshPort: 22,
       sshUsername: 'root',
@@ -13,6 +13,7 @@ class SSHModelRepository extends ModelRepository {
     ),
     );
     _models.add(SSHConnectionModel(
+      "Hetzner MC",
       sshHost: 'mc.aether-project.games',
       sshPort: 22,
       sshUsername: 'root',

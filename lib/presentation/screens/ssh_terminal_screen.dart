@@ -6,11 +6,11 @@ import 'package:dartssh/identity.dart';
 import 'package:dartssh/pem.dart';
 import 'package:dartssh/transport.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/domain/content_models.dart';
 import 'package:xterm/flutter.dart';
 import 'package:xterm/terminal/terminal.dart';
 
-import '../color_constants.dart';
+import '../../color_constants.dart';
+import '../../domain/content_models.dart';
 
 class SSHTerminalScreen extends StatefulWidget {
   SSHTerminalScreen({

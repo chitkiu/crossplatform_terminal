@@ -1,4 +1,4 @@
-import 'package:flutter_app/domain/content_models.dart';
+import '../content_models.dart';
 
 import 'base_model_repository.dart';
 

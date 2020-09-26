@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/domain/content_models.dart';
-import 'package:flutter_app/presentation/click_listener.dart';
-
+import '../domain/content_models.dart';
 import '../color_constants.dart';
+import 'click_listener.dart';
 
 abstract class ListChildProvider {
   Widget provide(ContentModel model, BuildContext context);

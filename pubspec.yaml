@@ -30,9 +30,9 @@ dependencies:
   dartssh:
     git: https://github.com/GreenAppers/dartssh.git
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.3
+
+  http: ^0.12.0
 
 dev_dependencies:
   flutter_test:

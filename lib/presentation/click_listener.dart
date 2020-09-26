@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/domain/content_models.dart';
-import 'package:flutter_app/screens/ssh_terminal_screen.dart';
+
+import 'screens/ssh_terminal_screen.dart';
+import '../domain/content_models.dart';
 
 abstract class ClickListener {
   void onItemClicked(ContentModel item, BuildContext context);
