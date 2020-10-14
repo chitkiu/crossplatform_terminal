@@ -6,16 +6,16 @@ class SSHModelRepository extends ModelRepository {
   SSHModelRepository(): super() {
     _models.add(SSHConnectionModel(
       "Hetzner Database",
-      sshHost: 'database.aether-project.games',
-      sshPort: 22,
+      'database.aether-project.games',
+      22,
       sshUsername: 'root',
       sshPrivateKey: SSHKey.KEY,
     ),
     );
     _models.add(SSHConnectionModel(
       "Hetzner MC",
-      sshHost: 'mc.aether-project.games',
-      sshPort: 22,
+      'mc.aether-project.games',
+      22,
       sshUsername: 'root',
       sshPrivateKey: SSHKey.KEY,
     ),

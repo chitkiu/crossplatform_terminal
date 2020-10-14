@@ -1,14 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import '../../data/api/http_requests.dart';
 
 import '../../color_constants.dart';
-import '../click_listener.dart';
-import '../list_child_provider.dart';
+import '../../data/api/http_requests.dart';
 import '../../domain/repositories/base_model_repository.dart';
 import '../../domain/repositories/ftp_model_repository.dart';
 import '../../domain/repositories/ssh_model_repository.dart';
+import '../list_child_provider.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -17,8 +16,8 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<StatefulWidget> {
 
-  ModelRepository _repo;
-  ListChildProvider _listChildProvider;
+  ModelRepository _repo = SSHModelRepository();
+  ListChildProvider _listChildProvider = SSHChildProvider();
 
   StreamSubscription _disposable;
 
@@ -49,29 +48,22 @@ class _MainScreenState extends State<StatefulWidget> {
                         )
                     ),
                     onTap: () {
-                      var api = HttpApiRequests(
-                          scheme: "http",
-                          host: "localhost:8080"
-                      );
-                      _setSSHState();
-                      _disposable = api.getServers().listen((event) {
-                        setState(() {
-                          _repo.setModels(event);
-                        });
-                      });
+                      _handleSSHClick();
+                      FocusScope.of(context).unfocus();
                       Navigator.pop(context);
                     },
                   ),
                   ListTile(
                     hoverColor: ColorConstant.mainHover,
                     title: Text(
-                      'SFTP connection',
+                      'FTP connection',
                       style: TextStyle(
                           color: ColorConstant.mainText
                       ),
                     ),
                     onTap: () {
-                      _setFTPState();
+                      _handleFTPClick();
+                      FocusScope.of(context).unfocus();
                       Navigator.pop(context);
                     },
                   ),
@@ -92,9 +84,40 @@ class _MainScreenState extends State<StatefulWidget> {
   @override
   void initState() {
     super.initState();
-    _disposable = null;
-    _repo = SSHModelRepository();
-    _listChildProvider = SSHChildProvider();
+  }
+
+  @override
+  void didUpdateWidget(StatefulWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    FocusScope.of(context).unfocus();
+  }
+
+  void _handleSSHClick() {
+    _setSSHState();
+    var api = HttpApiRequests(
+        scheme: "http",
+        host: "localhost:8080"
+    );
+    _disposable = api.getServers().listen(
+            (event) {
+          var items = event;
+          if (event == null) {
+            items = List(0);
+          }
+          setState(() {
+            _repo.setModels(items);
+          });
+        },
+        cancelOnError: true,
+        onError: (error) {
+              setState(() {
+                _repo.setModels(List(0));
+              });
+        });
+  }
+
+  void _handleFTPClick() {
+    _setFTPState();
   }
 
   void _cancelDisposable() {
@@ -105,18 +128,26 @@ class _MainScreenState extends State<StatefulWidget> {
   }
 
   void _setSSHState() {
-    _cancelDisposable();
     setState(() {
+      _cancelDisposable();
       _repo = SSHModelRepository();
       _listChildProvider = SSHChildProvider();
     });
   }
 
   void _setFTPState() {
-    _cancelDisposable();
     setState(() {
+      _cancelDisposable();
       _repo = FTPModelRepository();
       _listChildProvider = FTPChildProvider();
+    });
+  }
+
+  void _setAuthDataState() {
+    setState(() {
+      _cancelDisposable();
+      // _repo = FTPModelRepository();
+      // _listChildProvider = FTPChildProvider();
     });
   }
 }

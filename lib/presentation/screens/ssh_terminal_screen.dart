@@ -1,10 +1,9 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
+import 'dart:io';
 
 import 'package:dartssh/client.dart';
 import 'package:dartssh/identity.dart';
 import 'package:dartssh/pem.dart';
-import 'package:dartssh/transport.dart';
 import 'package:flutter/material.dart';
 import 'package:xterm/flutter.dart';
 import 'package:xterm/terminal/terminal.dart';
@@ -18,27 +17,14 @@ class SSHTerminalScreen extends StatefulWidget {
     @required this.sshConnectionInfo,
   }) : super(key: key);
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final SSHConnectionModel sshConnectionInfo;
 
   @override
-  _SSHTerminalScreenState createState() => _SSHTerminalScreenState(
-    sshConnectionInfo: sshConnectionInfo
-  );
+  _SSHTerminalScreenState createState() => _SSHTerminalScreenState(sshConnectionInfo);
 }
 
 class _SSHTerminalScreenState extends State<SSHTerminalScreen> {
-  _SSHTerminalScreenState({
-    @required this.sshConnectionInfo,
-  }) : super();
+  _SSHTerminalScreenState(this.sshConnectionInfo) : super();
 
   final SSHConnectionModel sshConnectionInfo;
 
@@ -47,6 +33,8 @@ class _SSHTerminalScreenState extends State<SSHTerminalScreen> {
 
   FocusNode _terminalFocusNode;
 
+  bool _mobileButtonVisible = false;
+
   @override
   void initState() {
     super.initState();
@@ -54,37 +42,48 @@ class _SSHTerminalScreenState extends State<SSHTerminalScreen> {
 
     _terminal = Terminal(
       onInput: _onInput,
+      onBell: () {
+        //TODO: Add sound
+        print("initState onBell");
+      },
     );
 
     _sshClient = SSHClient(
-        hostport: Uri(scheme: 'ssh', host: sshConnectionInfo.sshHost, port: sshConnectionInfo.sshPort),
-        termvar: 'xterm',
+        hostport: Uri(scheme: 'ssh',
+            host: sshConnectionInfo.sshHost,
+            port: sshConnectionInfo.sshPort),
+        termvar: 'xterm-256color',
         login: sshConnectionInfo.sshUsername,
         getPassword: () => _getPassword(),
-        response: (SSHTransport transport, String somestring) => _terminal.write(somestring),
-        loadIdentity: _getPrivateKey
+        response: (transport, data) {
+          FocusScope.of(context).requestFocus(_terminalFocusNode);
+          _terminal.write(data);
+        },
+        loadIdentity: _getPrivateKey,
+        closeOnDisconnect: true,
+        disconnected: _onDisconnect,
+        success: _onSuccessConnection,
+        acceptHostFingerprint: (hostkeyType, keyFingerPrint) {
+          // String keyName = Key.name(hostkeyType);
+          //TODO: Show dialog
+          // Do you accept $keyName with fingerprint
+          // keyFingerPrint ?
+          return true;
+        }
     );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if(Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
-      var mediaQuery = MediaQuery.of(context);
-      var padding = mediaQuery.padding;
-      double height = mediaQuery.size.height - padding.top - padding.bottom;
-      double width = mediaQuery.size.width - padding.left - padding.right;
-
-      _terminal.resize(width.toInt(), height.toInt());
-
-      _sshClient.termHeight = _terminal.viewHeight;
-      _sshClient.termWidth = _terminal.viewWidth;
-    }
   }
 
   void _onInput(String input) {
     _sshClient.sendChannelData(utf8.encode(input));
-    // FocusScope.of(context).requestFocus(_terminalFocusNode);
+  }
+
+  void _onDisconnect() {
+    print("SSH connection was closed");
+    Navigator.pop(context);
+  }
+
+  void _onSuccessConnection() {
+    FocusScope.of(context).requestFocus(_terminalFocusNode);
   }
 
   List<int> _getPassword() {
@@ -108,22 +107,65 @@ class _SSHTerminalScreenState extends State<SSHTerminalScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(
-            color: ColorConstant.appBarText
+          color: ColorConstant.appBarText,
+          onPressed: () {
+            _sshClient.disconnect("");
+          },
         ),
         backgroundColor: ColorConstant.appBarBackground,
         title: Text(
-            sshConnectionInfo.sshHost,
+            sshConnectionInfo.title,
             style: TextStyle(
                 color: ColorConstant.appBarText
             )
         ),
         centerTitle: true,
       ),
-      body: TerminalView(
-        terminal: _terminal,
-        fontSize: 14,
-        focusNode: _terminalFocusNode,
-        // scrollController: TrackingScrollController(),
+      body: GestureDetector(
+          onTap: () {
+            print("onTap");
+          },
+          onTapDown: (info) {
+            print("onTapDown");
+            setState(() {
+              _mobileButtonVisible = !_mobileButtonVisible /*&&
+                  (Platform.isAndroid || Platform.isIOS)*/;
+            });
+          },
+          child: Container(
+            child: Stack(
+              children: [
+                TerminalView(
+                    terminal: _terminal,
+                    autofocus: true,
+                    focusNode: _terminalFocusNode,
+                    onResize: (width, height) {
+                      _sshClient.setTerminalWindowSize(width, height);
+                    }
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Visibility(
+                    visible: _mobileButtonVisible,
+                    child: Row(
+                      children: [
+                        Text("KEYBOARD",
+                          style: TextStyle(
+                              color: Colors.amberAccent
+                          ),
+                        ),
+                        Text("KEYBOARD1",
+                          style: TextStyle(
+                              color: Colors.amberAccent
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+          )
       ),
     );
   }
