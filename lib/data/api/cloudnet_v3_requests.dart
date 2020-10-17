@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_app/domain/content_models.dart';
 import 'package:http_auth/http_auth.dart';
 
-import 'entities/CloudNetV3Status.dart';
+import 'entities/cloud_net_v3_status.dart';
 
 class CloudNetV3Requests {
   CloudNetV3Requests(this._data);
