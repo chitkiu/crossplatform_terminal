@@ -148,6 +148,7 @@ class _SSHTerminalScreenState extends State<SSHTerminalScreen> {
                   child: Visibility(
                     visible: _mobileButtonVisible,
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text("KEYBOARD",
                           style: TextStyle(
