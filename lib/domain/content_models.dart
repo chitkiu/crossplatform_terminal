@@ -65,3 +65,14 @@ class AuthDataModel extends ContentModel {
   final String password;
   final String privateKey;
 }
+
+class CloudNetV3ServerModel extends ContentModel {
+  CloudNetV3ServerModel(title,
+      this.serverUrl,
+      this.username,
+      this.password) : super(title);
+
+  final String serverUrl;
+  final String username;
+  final String password;
+}

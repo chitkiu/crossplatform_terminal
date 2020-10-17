@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/domain/repositories/cloudnet_v3_model_repository.dart';
 
 import '../../color_constants.dart';
 import '../../data/api/http_requests.dart';
@@ -66,7 +67,33 @@ class _MainScreenState extends State<StatefulWidget> {
                       FocusScope.of(context).unfocus();
                       Navigator.pop(context);
                     },
-                  ),
+                  ),ListTile(
+                    hoverColor: ColorConstant.mainHover,
+                    title: Text(
+                      'Auth data',
+                      style: TextStyle(
+                          color: ColorConstant.mainText
+                      ),
+                    ),
+                    onTap: () {
+                      _handleAuthClick();
+                      FocusScope.of(context).unfocus();
+                      Navigator.pop(context);
+                    },
+                  ),ListTile(
+                    hoverColor: ColorConstant.mainHover,
+                    title: Text(
+                      'CloudNet V3 servers',
+                      style: TextStyle(
+                          color: ColorConstant.mainText
+                      ),
+                    ),
+                    onTap: () {
+                      _handleCloudNetV3Click();
+                      FocusScope.of(context).unfocus();
+                      Navigator.pop(context);
+                    },
+                  )
                 ],
               ),
             ),
@@ -94,7 +121,7 @@ class _MainScreenState extends State<StatefulWidget> {
 
   void _handleSSHClick() {
     _setSSHState();
-    var api = HttpApiRequests(
+    /*var api = HttpApiRequests(
         scheme: "http",
         host: "localhost:8080"
     );
@@ -113,11 +140,19 @@ class _MainScreenState extends State<StatefulWidget> {
               setState(() {
                 _repo.setModels(List(0));
               });
-        });
+        });*/
   }
 
   void _handleFTPClick() {
     _setFTPState();
+  }
+
+  void _handleAuthClick() {
+    _setAuthDataState();
+  }
+
+  void _handleCloudNetV3Click() {
+    _setCloudNetV3State();
   }
 
   void _cancelDisposable() {
@@ -140,6 +175,14 @@ class _MainScreenState extends State<StatefulWidget> {
       _cancelDisposable();
       _repo = FTPModelRepository();
       _listChildProvider = FTPChildProvider();
+    });
+  }
+
+  void _setCloudNetV3State() {
+    setState(() {
+      _cancelDisposable();
+      _repo = CloudNetV3ModelRepository();
+      _listChildProvider = CloudNetV3ChildProvider();
     });
   }
 
