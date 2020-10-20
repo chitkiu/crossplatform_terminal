@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/domain/repositories/cloudnet_v3_model_repository.dart';
 
 import '../../color_constants.dart';
-import '../../data/api/http_requests.dart';
 import '../../domain/repositories/base_model_repository.dart';
 import '../../domain/repositories/ftp_model_repository.dart';
 import '../../domain/repositories/ssh_model_repository.dart';
@@ -17,8 +16,8 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<StatefulWidget> {
 
-  ModelRepository _repo = SSHModelRepository();
-  ListChildProvider _listChildProvider = SSHChildProvider();
+  ModelRepository _repo = CloudNetV3ModelRepository();
+  ListChildProvider _listChildProvider = CloudNetV3ChildProvider();
 
   StreamSubscription _disposable;
 

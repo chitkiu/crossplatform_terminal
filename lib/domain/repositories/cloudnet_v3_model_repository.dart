@@ -1,3 +1,5 @@
+import '../../domain/repositories/ssh_key.dart';
+
 import '../content_models.dart';
 
 import 'base_model_repository.dart';
@@ -7,9 +9,9 @@ class CloudNetV3ModelRepository extends ModelRepository {
   CloudNetV3ModelRepository() : super() {
     _models.add(CloudNetV3ServerModel(
         "Main server",
-        "https://mc.aether-project.games:2812",
+        "mc.aether-project.games:2812",
         "chitkiu",
-        "Ototot55!"
+        SSHKey.PASS
     )
     );
   }

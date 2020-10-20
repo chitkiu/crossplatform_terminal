@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:dartssh/client.dart';
 import 'package:dartssh/identity.dart';
@@ -12,9 +11,8 @@ import '../../color_constants.dart';
 import '../../domain/content_models.dart';
 
 class SSHTerminalScreen extends StatefulWidget {
-  SSHTerminalScreen({
+  SSHTerminalScreen(this.sshConnectionInfo, {
     key,
-    @required this.sshConnectionInfo,
   }) : super(key: key);
 
   final SSHConnectionModel sshConnectionInfo;

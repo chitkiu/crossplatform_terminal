@@ -124,7 +124,7 @@ packages:
       name: http_auth
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.0"
+    version: "0.3.1"
   http_parser:
     dependency: transitive
     description:
@@ -166,7 +166,7 @@ packages:
       name: platform_info
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.1"
+    version: "2.1.0"
   pointycastle:
     dependency: transitive
     description:
