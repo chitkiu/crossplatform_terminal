@@ -30,6 +30,9 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
   final CloudNetV3Service _service;
 
   WebSocket _webSocket;
+  Terminal _terminal;
+
+  String _inputText = "";
 
   @override
   Widget build(BuildContext context) =>
@@ -59,23 +62,26 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
               builder: (context, snapshot) {
                 if(snapshot.hasData) {
                   if(snapshot.data is WebSocket) {
-                    _webSocket =  snapshot.data as WebSocket;
-                    var terminal = Terminal();
+                    _webSocket = snapshot.data;
+                    _terminal = Terminal(
+                      onInput: _onInput
+                    );
                     _webSocket.listen((event) {
-                      print(event);
                       dynamic json = JsonDecoder().convert(event);
                       if(json is Map) {
-                        Map data = (json as Map);
-                        bool hasData = data.containsKey('text');
+                        bool hasData = json.containsKey('text');
                         if (hasData) {
-                          for (var value in (data['text'] as String).split("\n")) {
-                            terminal.write(value+"\r\n");
+                          for (var value in (json['text'] as String).split("\n")) {
+                            if (value.isNotEmpty && value.trim() != ">") {
+                              _terminal.write(value + "\r\n");
+                            }
                           }
                         }
                       }
                     });
                     return TerminalView(
-                      terminal: terminal,
+                      terminal: _terminal,
+                      autofocus: true,
                     );
                   }
                 }
@@ -84,5 +90,16 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
             )
         ),
       );
+
+  void _onInput(String input) {
+      _terminal.write(input);
+      if(input != '\r') {
+        _inputText += input;
+      } else {
+        _terminal.write('\r\n');
+        print(_inputText);
+        _inputText = '';
+      }
+    }
 
 }

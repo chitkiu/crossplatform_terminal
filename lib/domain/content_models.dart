@@ -69,10 +69,14 @@ class AuthDataModel extends ContentModel {
 class CloudNetV3ServerModel extends ContentModel {
   CloudNetV3ServerModel(title,
       this.serverUrl,
+      this.serverPort,
       this.username,
-      this.password) : super(title);
+      this.password,
+      {this.screenPort = 80}) : super(title);
 
   final String serverUrl;
+  final int serverPort;
   final String username;
   final String password;
+  final int screenPort;
 }

@@ -32,7 +32,7 @@ class CloudNetV3Requests {
   Future<void> login() async {
     _init();
     var client = BasicAuthClient(_data.username, _data.password);
-    return client.get('https://'+_data.serverUrl+'/api/v1/auth').then((response) {
+    return client.get('https://${_data.serverUrl}:${_data.serverPort}/api/v1/auth').then((response) {
       _authMap = response.headers['set-cookie'];
     });
   }
@@ -42,15 +42,25 @@ class CloudNetV3Requests {
     var header = Map<String, String>();
     header.putIfAbsent('cookie', () => _authMap);
     return WebSocket.connect(
-        "wss://${_data.serverUrl}/screen/${service.serviceId.taskName}-${service.serviceId.taskServiceId}",
+        "wss://${_data.serverUrl}:${_data.screenPort}/screen/${service.serviceId.taskName}-${service.serviceId.taskServiceId}",
         headers: header
+    );
+  }
+
+  Future<void> screenSendCommand(CloudNetV3Service service, String command) {
+    _init();
+    Options options = Options();
+    options.headers['command'] = command;
+    return _dio.post(
+        '/screen/${service.serviceId.taskName}-${service.serviceId.taskServiceId}/command',
+        options: options
     );
   }
 
   void _init() {
     if(_dio == null) {
       BaseOptions options = new BaseOptions(
-        baseUrl: 'https://'+_data.serverUrl,
+        baseUrl: 'https://${_data.serverUrl}:${_data.serverPort}',
         connectTimeout: 15000,
         receiveTimeout: 13000,
       );

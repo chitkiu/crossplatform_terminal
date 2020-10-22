@@ -9,9 +9,11 @@ class CloudNetV3ModelRepository extends ModelRepository {
   CloudNetV3ModelRepository() : super() {
     _models.add(CloudNetV3ServerModel(
         "Main server",
-        "mc.aether-project.games:2812",
+        "mc.aether-project.games",
+        2812,
         "chitkiu",
-        SSHKey.PASS
+        SSHKey.PASS,
+      screenPort: 1488
     )
     );
   }
