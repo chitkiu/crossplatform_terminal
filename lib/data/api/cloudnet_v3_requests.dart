@@ -1,8 +1,9 @@
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_app/domain/content_models.dart';
 import 'package:http_auth/http_auth.dart';
+import 'package:web_socket_channel/io.dart';
 
 import 'entities/cloud_net_v3_service.dart';
 import 'entities/cloud_net_v3_status.dart';
@@ -14,6 +15,7 @@ class CloudNetV3Requests {
 
   String _authMap = '';
   Dio _dio;
+  Dio _dioScreenServer;
 
   Future<List<CloudNetV3Service>> getServices() {
     _init();
@@ -37,11 +39,11 @@ class CloudNetV3Requests {
     });
   }
 
-  Future<WebSocket> screenStream(CloudNetV3Service service) {
+  IOWebSocketChannel screenStream(CloudNetV3Service service) {
     _init();
     var header = Map<String, String>();
     header.putIfAbsent('cookie', () => _authMap);
-    return WebSocket.connect(
+    return IOWebSocketChannel.connect(
         "wss://${_data.serverUrl}:${_data.screenPort}/screen/${service.serviceId.taskName}-${service.serviceId.taskServiceId}",
         headers: header
     );
@@ -50,14 +52,19 @@ class CloudNetV3Requests {
   Future<void> screenSendCommand(CloudNetV3Service service, String command) {
     _init();
     Options options = Options();
-    options.headers['command'] = command;
-    return _dio.post(
+    options.headers['command'] = utf8.encoder.convert(command);
+    return _dioScreenServer.post(
         '/screen/${service.serviceId.taskName}-${service.serviceId.taskServiceId}/command',
         options: options
     );
   }
 
   void _init() {
+    _initDefaultServer();
+    _initScreenServer();
+  }
+
+  void _initDefaultServer() {
     if(_dio == null) {
       BaseOptions options = new BaseOptions(
         baseUrl: 'https://${_data.serverUrl}:${_data.serverPort}',
@@ -70,6 +77,25 @@ class CloudNetV3Requests {
             _dio.interceptors.requestLock.lock();
             options.headers['cookie'] = _authMap;
             _dio.interceptors.requestLock.unlock();
+            return options; //continue
+          }
+      ));
+    }
+  }
+
+  void _initScreenServer() {
+    if(_dioScreenServer == null) {
+      BaseOptions options = new BaseOptions(
+        baseUrl: 'https://${_data.serverUrl}:${_data.screenPort}',
+        connectTimeout: 15000,
+        receiveTimeout: 13000,
+      );
+      _dioScreenServer = Dio(options);
+      _dioScreenServer.interceptors.add(InterceptorsWrapper(
+          onRequest:(Options options) async {
+            _dioScreenServer.interceptors.requestLock.lock();
+            options.headers['cookie'] = _authMap;
+            _dioScreenServer.interceptors.requestLock.unlock();
             return options; //continue
           }
       ));

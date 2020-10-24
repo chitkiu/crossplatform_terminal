@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:xterm/flutter.dart';
 import 'package:xterm/terminal/terminal.dart';
 
@@ -10,96 +11,143 @@ import '../../color_constants.dart';
 import '../../data/api/cloudnet_v3_requests.dart';
 
 class CloudNetV3Terminal extends StatefulWidget {
-
-  CloudNetV3Terminal(this._request, this._service, {
-    key
-  }): super(key: key);
+  CloudNetV3Terminal(this._request, this._service, {key}) : super(key: key);
 
   final CloudNetV3Requests _request;
   final CloudNetV3Service _service;
 
   @override
-  State<StatefulWidget> createState() => _CloudNetV3Terminal(_request, _service);
+  State<StatefulWidget> createState() =>
+      _CloudNetV3Terminal(_request, _service);
 }
 
 class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
-
   _CloudNetV3Terminal(this._request, this._service) : super();
 
   final CloudNetV3Requests _request;
   final CloudNetV3Service _service;
 
-  WebSocket _webSocket;
+  IOWebSocketChannel _webSocket;
   Terminal _terminal;
 
-  String _inputText = "";
+  FocusNode _terminalFocusNode;
+
+  TextEditingController _textEditingController = TextEditingController();
 
   @override
-  Widget build(BuildContext context) =>
-      WillPopScope(
-        onWillPop: () {
-          if(_webSocket != null) {
-            return _webSocket.close().then((value) => Future.value(true));
+  void initState() {
+    super.initState();
+
+    _terminalFocusNode = FocusNode();
+
+    _terminal = Terminal();
+
+    _webSocket = _request.screenStream(_service);
+    _webSocket.stream.listen(
+      (dynamic message) {
+        dynamic json = JsonDecoder().convert(message);
+        if (json is Map) {
+          if (json.containsKey('text')) {
+            for (var value in (json['text'] as String).split("\n")) {
+              if (value.isNotEmpty && value.trim() != ">") {
+                _terminal.write(value + "\r\n");
+              }
+            }
           }
-          return Future.value(true);
-        },
-        child: Scaffold(
-            appBar: AppBar(
-              leading: BackButton(
-                  color: ColorConstant.appBarText
-              ),
-              backgroundColor: ColorConstant.appBarBackground,
-              title: Text(
-                  "${_service.serviceId.taskName}-${_service.serviceId.taskServiceId}",
-                  style: TextStyle(
-                      color: ColorConstant.appBarText
-                  )
-              ),
-              centerTitle: true,
-            ),
-            body: FutureBuilder(
-              future: _request.screenStream(_service),
-              builder: (context, snapshot) {
-                if(snapshot.hasData) {
-                  if(snapshot.data is WebSocket) {
-                    _webSocket = snapshot.data;
-                    _terminal = Terminal(
-                      onInput: _onInput
-                    );
-                    _webSocket.listen((event) {
-                      dynamic json = JsonDecoder().convert(event);
-                      if(json is Map) {
-                        bool hasData = json.containsKey('text');
-                        if (hasData) {
-                          for (var value in (json['text'] as String).split("\n")) {
-                            if (value.isNotEmpty && value.trim() != ">") {
-                              _terminal.write(value + "\r\n");
-                            }
-                          }
-                        }
-                      }
-                    });
-                    return TerminalView(
-                      terminal: _terminal,
-                      autofocus: true,
-                    );
-                  }
-                }
-                return Text("ERROR");
-              },
-            )
-        ),
-      );
+        }
+      },
+      onDone: () {
+        _closeConnectionAlertDialog();
+      },
+      onError: (error) {
+        debugPrint(error);
+      },
+    );
+  }
 
-  void _onInput(String input) {
-      _terminal.write(input);
-      if(input != '\r') {
-        _inputText += input;
-      } else {
-        _terminal.write('\r\n');
-        print(_inputText);
-        _inputText = '';
-      }
-    }
+  @override
+  Widget build(BuildContext context) => WillPopScope(
+      onWillPop: () {
+        if (_webSocket != null) {
+          return _webSocket.sink.close().then((value) => Future.value(true));
+        }
+        return Future.value(true);
+      },
+      child: Scaffold(
+          appBar: AppBar(
+            leading: BackButton(color: ColorConstant.appBarText),
+            backgroundColor: ColorConstant.appBarBackground,
+            title: Text(
+                "${_service.serviceId.taskName}-${_service.serviceId.taskServiceId}",
+                style: TextStyle(color: ColorConstant.appBarText)),
+            centerTitle: true,
+          ),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Flexible(
+                flex: 11,
+                child: TerminalView(
+                  terminal: _terminal,
+                  focusNode: _terminalFocusNode,
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 500,
+                      child: TextFormField(
+                        controller: _textEditingController,
+                        style: TextStyle(color: ColorConstant.mainText),
+                        decoration: InputDecoration(
+                          labelText: 'Enter your command',
+                          labelStyle: TextStyle(color: ColorConstant.hintText),
+                        ),
+                      ),
+                    ),
+                    RaisedButton(
+                      onPressed: () {
+                        _request
+                            .screenSendCommand(_service, _textEditingController.text)
+                            .asStream()
+                            .listen((event) {
+                          _textEditingController.clear();
+                        }, onError: (error) {
+                              print(error);
+                          _textEditingController.clear();
+                        });
+                      },
+                      color: ColorConstant.mainButton,
+                      hoverColor: ColorConstant.mainHover,
+                      child: Text(
+                        "Send command",
+                        style: TextStyle(color: ColorConstant.mainText),
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          )));
 
+  void _closeConnectionAlertDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: new Text("Something wrong"),
+        content: new Text("Error has occurred with console :("),
+        actions: [
+          new FlatButton(
+            child: new Text("OK"),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+    Navigator.pop(context);
+  }
 }
