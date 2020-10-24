@@ -34,6 +34,8 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
 
   TextEditingController _textEditingController = TextEditingController();
 
+  bool _requestClose = false;
+
   @override
   void initState() {
     super.initState();
@@ -57,7 +59,9 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
         }
       },
       onDone: () {
-        _closeConnectionAlertDialog();
+        if(!_requestClose) {
+          _closeConnectionAlertDialog();
+        }
       },
       onError: (error) {
         debugPrint(error);
@@ -68,6 +72,7 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
   @override
   Widget build(BuildContext context) => WillPopScope(
       onWillPop: () {
+        _requestClose = true;
         if (_webSocket != null) {
           return _webSocket.sink.close().then((value) => Future.value(true));
         }
