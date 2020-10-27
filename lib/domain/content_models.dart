@@ -72,6 +72,7 @@ class CloudNetV3ServerModel extends ContentModel {
       this.serverPort,
       this.username,
       this.password,
+      this.useHttps,
       {this.screenPort = 80}) : super(title);
 
   final String serverUrl;
@@ -79,4 +80,21 @@ class CloudNetV3ServerModel extends ContentModel {
   final String username;
   final String password;
   final int screenPort;
+  final bool useHttps;
+
+  String getScheme() {
+    if (useHttps) {
+      return "https";
+    } else {
+      return "http";
+    }
+  }
+
+  String getWebSocketScheme() {
+    if (useHttps) {
+      return "wss";
+    } else {
+      return "ws";
+    }
+  }
 }

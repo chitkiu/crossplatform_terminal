@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:websocket/websocket.dart';
 import 'package:xterm/flutter.dart';
 import 'package:xterm/terminal/terminal.dart';
 
@@ -27,7 +27,8 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
   final CloudNetV3Requests _request;
   final CloudNetV3Service _service;
 
-  IOWebSocketChannel _webSocket;
+  WebSocket _webSocket;
+
   Terminal _terminal;
 
   FocusNode _terminalFocusNode;
@@ -44,29 +45,38 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
 
     _terminal = Terminal();
 
-    _webSocket = _request.screenStream(_service);
-    _webSocket.stream.listen(
-      (dynamic message) {
-        dynamic json = JsonDecoder().convert(message);
-        if (json is Map) {
-          if (json.containsKey('text')) {
-            for (var value in (json['text'] as String).split("\n")) {
-              if (value.isNotEmpty && value.trim() != ">") {
-                _terminal.write(value + "\r\n");
+    _request.screenStream(_service).then((websocket) {
+      _webSocket = websocket;
+      websocket.add("token=${_request.authToken}");
+      websocket.stream.listen(
+        (dynamic message) {
+          // debugPrint(message);
+          dynamic json = JsonDecoder().convert(message);
+          if (json is Map) {
+            if (json.containsKey('auth_success') &&
+                json['auth_success'] == 'true') {
+              websocket.add("service=${_service.serviceId.taskName}-${_service.serviceId.taskServiceId}");
+            } else if (json.containsKey('text')) {
+              for (var value in (json['text'] as String).split("\n")) {
+                if (value.isNotEmpty && value.trim() != ">") {
+                  _terminal.write(value + "\r\n");
+                }
               }
+            } else if (json.containsKey('error')) {
+              debugPrint(json['error']);
             }
           }
-        }
-      },
-      onDone: () {
-        if(!_requestClose) {
-          _closeConnectionAlertDialog();
-        }
-      },
-      onError: (error) {
-        debugPrint(error);
-      },
-    );
+        },
+        onDone: () {
+          if (!_requestClose) {
+            _closeConnectionAlertDialog();
+          }
+        },
+        onError: (error) {
+          debugPrint(error);
+        },
+      );
+    });
   }
 
   @override
@@ -74,7 +84,7 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
       onWillPop: () {
         _requestClose = true;
         if (_webSocket != null) {
-          return _webSocket.sink.close().then((value) => Future.value(true));
+          return _webSocket.close().then((value) => Future.value(true));
         }
         return Future.value(true);
       },
@@ -95,45 +105,22 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
                 child: TerminalView(
                   terminal: _terminal,
                   focusNode: _terminalFocusNode,
+                  autofocus: false,
                 ),
               ),
               Flexible(
                 flex: 1,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 500,
-                      child: TextFormField(
-                        controller: _textEditingController,
-                        style: TextStyle(color: ColorConstant.mainText),
-                        decoration: InputDecoration(
-                          labelText: 'Enter your command',
-                          labelStyle: TextStyle(color: ColorConstant.hintText),
-                        ),
-                      ),
-                    ),
-                    RaisedButton(
-                      onPressed: () {
-                        _request
-                            .screenSendCommand(_service, _textEditingController.text)
-                            .asStream()
-                            .listen((event) {
-                          _textEditingController.clear();
-                        }, onError: (error) {
-                              print(error);
-                          _textEditingController.clear();
-                        });
-                      },
-                      color: ColorConstant.mainButton,
-                      hoverColor: ColorConstant.mainHover,
-                      child: Text(
-                        "Send command",
-                        style: TextStyle(color: ColorConstant.mainText),
-                      ),
-                    )
-                  ],
+                child: TextFormField(
+                  autofocus: true,
+                  controller: _textEditingController,
+                  textInputAction: TextInputAction.done,
+                  onEditingComplete: _sendCommand,
+                  style: TextStyle(color: ColorConstant.mainText),
+                  maxLines: 1,
+                  decoration: InputDecoration(
+                    labelText: 'Enter your command',
+                    labelStyle: TextStyle(color: ColorConstant.hintText),
+                  ),
                 ),
               )
             ],
@@ -154,5 +141,17 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
       ),
     );
     Navigator.pop(context);
+  }
+
+  void _sendCommand() {
+    String command = _textEditingController.text;
+    if (command.isNotEmpty) {
+      _request.screenSendCommand(_service, command).asStream().listen((event) {
+        _textEditingController.clear();
+      }, onError: (error) {
+        print(error);
+        _textEditingController.clear();
+      });
+    }
   }
 }
