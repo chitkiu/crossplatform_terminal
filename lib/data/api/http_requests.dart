@@ -47,7 +47,7 @@ class HttpApiRequests {
           );
         } else if(data.containsKey("error")) {
           return ResponseData(
-              success: data['error']
+              error: data['error']
           );
         }
       }
