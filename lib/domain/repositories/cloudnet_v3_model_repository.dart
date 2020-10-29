@@ -6,21 +6,6 @@ import 'base_model_repository.dart';
 
 class CloudNetV3ModelRepository extends ModelRepository {
 
-  CloudNetV3ModelRepository() : super() {
-    _models.add(CloudNetV3ServerModel(
-        "Main server",
-        "49.12.106.221",
-        // "mc.aether-project.games",
-        2812,
-        "chitkiu",
-        SSHKey.PASS,
-      false,
-      // true,
-      screenPort: 1488
-    )
-    );
-  }
-
   List<CloudNetV3ServerModel> _models = List();
 
   @override

@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_app/domain/repositories/cloudnet_v3_model_repository.dart';
 
+import '../../constants.dart';
+import '../../domain/repositories/cloudnet_v3_model_repository.dart';
 import '../../color_constants.dart';
 import '../../domain/repositories/base_model_repository.dart';
 import '../../domain/repositories/ftp_model_repository.dart';
@@ -16,8 +17,8 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<StatefulWidget> {
 
-  ModelRepository _repo = CloudNetV3ModelRepository();
-  ListChildProvider _listChildProvider = CloudNetV3ChildProvider();
+  ModelRepository _repo;
+  ListChildProvider _listChildProvider;
 
   StreamSubscription _disposable;
 
@@ -110,6 +111,7 @@ class _MainScreenState extends State<StatefulWidget> {
   @override
   void initState() {
     super.initState();
+    _setCloudNetV3State();
   }
 
   @override
@@ -162,32 +164,38 @@ class _MainScreenState extends State<StatefulWidget> {
   }
 
   void _setSSHState() {
+    _cancelDisposable();
+    _repo = SSHModelRepository();
+    _listChildProvider = SSHChildProvider();
+
     setState(() {
-      _cancelDisposable();
-      _repo = SSHModelRepository();
-      _listChildProvider = SSHChildProvider();
     });
   }
 
   void _setFTPState() {
+    _cancelDisposable();
+    _repo = FTPModelRepository();
+    _listChildProvider = FTPChildProvider();
+
     setState(() {
-      _cancelDisposable();
-      _repo = FTPModelRepository();
-      _listChildProvider = FTPChildProvider();
     });
   }
 
   void _setCloudNetV3State() {
-    setState(() {
-      _cancelDisposable();
-      _repo = CloudNetV3ModelRepository();
-      _listChildProvider = CloudNetV3ChildProvider();
+    _cancelDisposable();
+    _repo = CloudNetV3ModelRepository();
+    _listChildProvider = CloudNetV3ChildProvider();
+
+    Constants.requests.getCloudNetV3Servers().then((value) {
+      setState(() {
+        _repo.setModels(value);
+      });
     });
   }
 
   void _setAuthDataState() {
+    _cancelDisposable();
     setState(() {
-      _cancelDisposable();
       // _repo = FTPModelRepository();
       // _listChildProvider = FTPChildProvider();
     });

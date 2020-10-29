@@ -67,7 +67,7 @@ class AuthDataModel extends ContentModel {
 }
 
 class CloudNetV3ServerModel extends ContentModel {
-  CloudNetV3ServerModel(title,
+  CloudNetV3ServerModel(this.id, title,
       this.serverUrl,
       this.serverPort,
       this.username,
@@ -75,6 +75,7 @@ class CloudNetV3ServerModel extends ContentModel {
       this.useHttps,
       {this.screenPort = 80}) : super(title);
 
+  final int id;
   final String serverUrl;
   final int serverPort;
   final String username;
@@ -96,5 +97,19 @@ class CloudNetV3ServerModel extends ContentModel {
     } else {
       return "ws";
     }
+  }
+
+
+  factory CloudNetV3ServerModel.fromJSON(dynamic json) {
+    return CloudNetV3ServerModel(
+      json['id'] as int,
+      json['name'] as String,
+      json['serverUrl'] as String,
+      json['serverPort'] as int,
+      json['username'] as String,
+      json['password'] as String,
+      json['useSsl'] as bool,
+      screenPort: json['screenPort'] as int
+    );
   }
 }

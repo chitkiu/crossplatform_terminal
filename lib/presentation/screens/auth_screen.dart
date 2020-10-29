@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../InMemorySharedPrefs.dart';
+import '../../color_constants.dart';
+import '../../constants.dart';
 
 import 'main_screen.dart';
 
@@ -10,7 +11,7 @@ class AuthScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<StatefulWidget> {
 
-  TextStyle style = TextStyle(fontFamily: 'Montserrat', fontSize: 20.0);
+  TextStyle style = TextStyle(fontFamily: 'Montserrat', fontSize: 20.0, color: ColorConstant.mainText);
 
   TextEditingController _loginController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
@@ -25,6 +26,7 @@ class _LoginScreenState extends State<StatefulWidget> {
       decoration: InputDecoration(
           contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
           hintText: "Login",
+          hintStyle: style,
           border:
           OutlineInputBorder(borderRadius: BorderRadius.circular(32.0))),
     );
@@ -35,18 +37,19 @@ class _LoginScreenState extends State<StatefulWidget> {
       decoration: InputDecoration(
           contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
           hintText: "Password",
+          hintStyle: style,
           border:
           OutlineInputBorder(borderRadius: BorderRadius.circular(32.0))),
     );
     final loginButton = Material(
       elevation: 5.0,
       borderRadius: BorderRadius.circular(30.0),
-      color: Color(0xff01A0C7),
+      color: ColorConstant.mainButton,
       child: MaterialButton(
         minWidth: MediaQuery.of(context).size.width,
         padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
         onPressed: () {
-          InMemorySharedPreference.requests.login(_loginController.text, _passwordController.text).then((response) {
+          Constants.requests.login(_loginController.text, _passwordController.text).then((response) {
             if(response.isSuccess()) {
               Navigator.push(
                 context,
@@ -62,14 +65,14 @@ class _LoginScreenState extends State<StatefulWidget> {
         child: Text("Login",
             textAlign: TextAlign.center,
             style: style.copyWith(
-                color: Colors.white, fontWeight: FontWeight.bold)),
+                color: ColorConstant.mainText, fontWeight: FontWeight.bold)),
       ),
     );
 
     return Scaffold(
       body: Center(
         child: Container(
-          color: Colors.white,
+          color: ColorConstant.mainBackground,
           child: Padding(
             padding: const EdgeInsets.all(36.0),
             child: Column(

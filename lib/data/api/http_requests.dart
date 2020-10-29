@@ -16,6 +16,8 @@ class HttpApiRequests {
   /// Host should be with port
   final String host;
 
+  Map<String, String> _authHeader;
+
   /*Stream<List<SSHConnectionModel>> getServers() {
     return http.get('$scheme://$host/servers')
         .then((value) {
@@ -27,6 +29,27 @@ class HttpApiRequests {
         })
         .asStream();
   }*/
+
+  Future<List<CloudNetV3ServerModel>> getCloudNetV3Servers() {
+    Dio dio = Dio(BaseOptions(
+        baseUrl:
+        "$scheme://$host",
+        contentType: "application/json",
+        headers: _authHeader
+    )
+    );
+    return dio.get<String>(
+      "/cloudnet"
+    ).then((response) {
+      dynamic data = JsonDecoder().convert(response.data);
+
+      if (data is List) {
+        return data.map((e) => CloudNetV3ServerModel.fromJSON(e)).toList();
+      } else {
+        return Future.error("Cannot parse data");
+      }
+    });
+  }
 
   Future<ResponseData> login(String user, String password) {
     Dio dio = Dio(BaseOptions(
@@ -42,6 +65,7 @@ class HttpApiRequests {
       dynamic data = JsonDecoder().convert(response.data);
       if (data is Map) {
         if(data.containsKey("token")) {
+          _authHeader = Map()..putIfAbsent("Authorization", () => "Bearer ${data["token"]}");
           return ResponseData(
             success: "true"
           );
