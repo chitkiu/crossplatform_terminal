@@ -1,12 +1,25 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/presentation/screens/cloud_net_v3_info_screen.dart';
 
+import 'screens/cloud_net_v3_info_screen.dart';
 import 'screens/ssh_terminal_screen.dart';
 import '../domain/content_models.dart';
 
 abstract class ClickListener {
   void onItemClicked(ContentModel item, BuildContext context);
+}
+
+class AuthClickListener extends ClickListener {
+  @override
+  void onItemClicked(ContentModel item, BuildContext context) {
+    if(item is AuthDataModel) {
+      /*Navigator.push(
+        context,
+        new MaterialPageRoute(builder: (ctxt) => SSHTerminalScreen(item)
+        ),
+      );*/
+    }
+  }
 }
 
 class SSHClickListener extends ClickListener {
@@ -44,8 +57,7 @@ class CloudNetV3ClickListener extends ClickListener {
     if(item is CloudNetV3ServerModel) {
       Navigator.push(
         context,
-        new MaterialPageRoute(builder: (ctxt) => CloudNetV3Screen(item)
-        ),
+        new MaterialPageRoute(builder: (ctxt) => CloudNetV3Screen(item)),
       );
     }
   }

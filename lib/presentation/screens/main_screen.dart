@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../constants.dart';
 import '../../domain/repositories/cloudnet_v3_model_repository.dart';
@@ -8,6 +9,7 @@ import '../../color_constants.dart';
 import '../../domain/repositories/base_model_repository.dart';
 import '../../domain/repositories/ftp_model_repository.dart';
 import '../../domain/repositories/ssh_model_repository.dart';
+import '../../domain/repositories/auth_model_repository.dart';
 import '../list_child_provider.dart';
 
 class MainScreen extends StatefulWidget {
@@ -26,6 +28,12 @@ class _MainScreenState extends State<StatefulWidget> {
   Widget build(BuildContext context) {
     return Builder(
         builder: (ctx) {
+          List<Widget> menuItems;
+          if(kIsWeb) {
+            menuItems = _getListForWeb();
+          } else {
+            menuItems = _getListForNative();
+          }
           return Scaffold(
             appBar: AppBar(
               title: Text(
@@ -39,62 +47,7 @@ class _MainScreenState extends State<StatefulWidget> {
             drawer: Drawer(
               child: ListView(
                 padding: EdgeInsets.zero,
-                children: <Widget>[
-                  ListTile(
-                    hoverColor: ColorConstant.mainHover,
-                    title: Text(
-                        'SSH connection',
-                        style: TextStyle(
-                            color: ColorConstant.mainText
-                        )
-                    ),
-                    onTap: () {
-                      _handleSSHClick();
-                      FocusScope.of(context).unfocus();
-                      Navigator.pop(context);
-                    },
-                  ),
-                  ListTile(
-                    hoverColor: ColorConstant.mainHover,
-                    title: Text(
-                      'FTP connection',
-                      style: TextStyle(
-                          color: ColorConstant.mainText
-                      ),
-                    ),
-                    onTap: () {
-                      _handleFTPClick();
-                      FocusScope.of(context).unfocus();
-                      Navigator.pop(context);
-                    },
-                  ),ListTile(
-                    hoverColor: ColorConstant.mainHover,
-                    title: Text(
-                      'Auth data',
-                      style: TextStyle(
-                          color: ColorConstant.mainText
-                      ),
-                    ),
-                    onTap: () {
-                      _handleAuthClick();
-                      FocusScope.of(context).unfocus();
-                      Navigator.pop(context);
-                    },
-                  ),ListTile(
-                    hoverColor: ColorConstant.mainHover,
-                    title: Text(
-                      'CloudNet V3 servers',
-                      style: TextStyle(
-                          color: ColorConstant.mainText
-                      ),
-                    ),
-                    onTap: () {
-                      _handleCloudNetV3Click();
-                      FocusScope.of(context).unfocus();
-                      Navigator.pop(context);
-                    },
-                  )
-                ],
+                children: menuItems,
               ),
             ),
             body: ListView.builder(
@@ -106,6 +59,97 @@ class _MainScreenState extends State<StatefulWidget> {
           );
         }
     );
+  }
+
+  List<Widget> _getListForNative() {
+    return <Widget>[
+      ListTile(
+        hoverColor: ColorConstant.mainHover,
+        title: Text(
+            'SSH connection',
+            style: TextStyle(
+                color: ColorConstant.mainText
+            )
+        ),
+        onTap: () {
+          _handleSSHClick();
+          FocusScope.of(context).unfocus();
+          Navigator.pop(context);
+        },
+      ),
+      ListTile(
+        hoverColor: ColorConstant.mainHover,
+        title: Text(
+          'FTP connection',
+          style: TextStyle(
+              color: ColorConstant.mainText
+          ),
+        ),
+        onTap: () {
+          _handleFTPClick();
+          FocusScope.of(context).unfocus();
+          Navigator.pop(context);
+        },
+      ),ListTile(
+        hoverColor: ColorConstant.mainHover,
+        title: Text(
+          'Auth data',
+          style: TextStyle(
+              color: ColorConstant.mainText
+          ),
+        ),
+        onTap: () {
+          _handleAuthClick();
+          FocusScope.of(context).unfocus();
+          Navigator.pop(context);
+        },
+      ),ListTile(
+        hoverColor: ColorConstant.mainHover,
+        title: Text(
+          'CloudNet V3 servers',
+          style: TextStyle(
+              color: ColorConstant.mainText
+          ),
+        ),
+        onTap: () {
+          _handleCloudNetV3Click();
+          FocusScope.of(context).unfocus();
+          Navigator.pop(context);
+        },
+      )
+    ];
+  }
+
+  List<Widget> _getListForWeb() {
+    return <Widget>[
+      ListTile(
+        hoverColor: ColorConstant.mainHover,
+        title: Text(
+          'Auth data',
+          style: TextStyle(
+              color: ColorConstant.mainText
+          ),
+        ),
+        onTap: () {
+          _handleAuthClick();
+          FocusScope.of(context).unfocus();
+          Navigator.pop(context);
+        },
+      ),ListTile(
+        hoverColor: ColorConstant.mainHover,
+        title: Text(
+          'CloudNet V3 servers',
+          style: TextStyle(
+              color: ColorConstant.mainText
+          ),
+        ),
+        onTap: () {
+          _handleCloudNetV3Click();
+          FocusScope.of(context).unfocus();
+          Navigator.pop(context);
+        },
+      )
+    ];
   }
 
   @override
@@ -168,7 +212,10 @@ class _MainScreenState extends State<StatefulWidget> {
     _repo = SSHModelRepository();
     _listChildProvider = SSHChildProvider();
 
-    setState(() {
+    Constants.requests.getSSHServers().then((value) {
+      setState(() {
+        _repo.setModels(value);
+      });
     });
   }
 
@@ -195,9 +242,13 @@ class _MainScreenState extends State<StatefulWidget> {
 
   void _setAuthDataState() {
     _cancelDisposable();
-    setState(() {
-      // _repo = FTPModelRepository();
-      // _listChildProvider = FTPChildProvider();
+    _repo = AuthModelRepository();
+    _listChildProvider = AuthChildProvider();
+
+    Constants.requests.getAuthData().then((value) {
+      setState(() {
+        _repo.setModels(value);
+      });
     });
   }
 }

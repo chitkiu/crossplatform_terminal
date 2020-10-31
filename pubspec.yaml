@@ -1,4 +1,4 @@
-name: flutter_app
+name: crossplatform_terminal
 description: A new Flutter application.
 
 publish_to: 'none'
@@ -23,9 +23,16 @@ dependencies:
 
   dio: ^3.0.10
 
+  flutter_launcher_icons: ^0.8.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+flutter_icons:
+  image_path: "assets/images/icon.png"
+  android: true
+  ios: true
 
 flutter:
   uses-material-design: true

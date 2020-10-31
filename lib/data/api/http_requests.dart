@@ -18,17 +18,47 @@ class HttpApiRequests {
 
   Map<String, String> _authHeader;
 
-  /*Stream<List<SSHConnectionModel>> getServers() {
-    return http.get('$scheme://$host/servers')
-        .then((value) {
-          var list = JsonDecoder().convert(value.body) as List;
-          return list.map((e) => SSHConnectionModel.fromJSON(e)).toList();
-    })
-        .catchError((error) {
-          print("Error: $error");
-        })
-        .asStream();
-  }*/
+  Future<List<AuthDataModel>> getAuthData() {
+    Dio dio = Dio(BaseOptions(
+        baseUrl:
+        "$scheme://$host",
+        contentType: "application/json",
+        headers: _authHeader
+    )
+    );
+    return dio.get<String>(
+      "/auth"
+    ).then((response) {
+      dynamic data = JsonDecoder().convert(response.data);
+
+      if (data is List) {
+        return data.map((e) => AuthDataModel.fromJSON(e)).toList();
+      } else {
+        return Future.error("Cannot parse data");
+      }
+    });
+  }
+
+  Future<List<SSHConnectionModel>> getSSHServers() {
+    Dio dio = Dio(BaseOptions(
+        baseUrl:
+        "$scheme://$host",
+        contentType: "application/json",
+        headers: _authHeader
+    )
+    );
+    return dio.get<String>(
+      "/sshserver"
+    ).then((response) {
+      dynamic data = JsonDecoder().convert(response.data);
+
+      if (data is List) {
+        return data.map((e) => SSHConnectionModel.fromJSON(e)).toList();
+      } else {
+        return Future.error("Cannot parse data");
+      }
+    });
+  }
 
   Future<List<CloudNetV3ServerModel>> getCloudNetV3Servers() {
     Dio dio = Dio(BaseOptions(

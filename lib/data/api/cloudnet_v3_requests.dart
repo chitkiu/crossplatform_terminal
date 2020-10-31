@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter_app/domain/content_models.dart';
+import '../../domain/content_models.dart';
 import 'package:websocket/websocket.dart';
 
 import 'entities/cloud_net_v3_service.dart';

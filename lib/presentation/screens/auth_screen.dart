@@ -51,7 +51,7 @@ class _LoginScreenState extends State<StatefulWidget> {
         onPressed: () {
           Constants.requests.login(_loginController.text, _passwordController.text).then((response) {
             if(response.isSuccess()) {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 new MaterialPageRoute(builder: (ctxt) => MainScreen()
                 ),

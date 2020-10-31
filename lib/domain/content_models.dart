@@ -22,13 +22,39 @@ class SSHConnectionModel extends ContentModel {
   final String sshPassword;
   final String sshPrivateKey;
 
-  factory SSHConnectionModel.fromJSON(dynamic json) {
+  factory SSHConnectionModel.fromJSON(Map<String, dynamic> json) {
+    dynamic auth = json['auth'];
+    String username;
+    if(json.containsKey('username')) {
+      username = json['username'];
+    }
+    if(username == null) {
+      if(auth != null) {
+        username = auth['username'];
+      }
+    }
+
+    String password;
+    if(json.containsKey('password')) {
+      password = json['password'];
+    }
+    if(password == null) {
+      if(auth != null) {
+        password = auth['password'];
+      }
+    }
+
+    String privateKey;
+    if(auth != null) {
+      privateKey = auth['privateKey'];
+    }
     return SSHConnectionModel(
       json['name'] as String,
       json['host'] as String,
       json['port'] as int,
-      sshUsername: json['username'] as String ?? '',
-      sshPassword: json['password'] as String ?? '',
+      sshUsername: username,
+      sshPassword: password,
+      sshPrivateKey: privateKey,
     );
   }
 }
@@ -56,14 +82,25 @@ class FTPConnectionModel extends ContentModel {
 }
 
 class AuthDataModel extends ContentModel {
-  AuthDataModel(title, this.username, {
+  AuthDataModel(this.id, title, this.username, {
     this.password,
     this.privateKey
   }) : super(title);
 
+  final String id;
   final String username;
   final String password;
   final String privateKey;
+
+  factory AuthDataModel.fromJSON(dynamic json) {
+    return AuthDataModel(
+        json['id'] as String,
+        json['name'] as String,
+        json['username'] as String,
+        password: json['password'] as String,
+        privateKey: json['privateKey'] as String
+    );
+  }
 }
 
 class CloudNetV3ServerModel extends ContentModel {
@@ -75,7 +112,7 @@ class CloudNetV3ServerModel extends ContentModel {
       this.useHttps,
       {this.screenPort = 80}) : super(title);
 
-  final int id;
+  final String id;
   final String serverUrl;
   final int serverPort;
   final String username;
@@ -99,10 +136,9 @@ class CloudNetV3ServerModel extends ContentModel {
     }
   }
 
-
   factory CloudNetV3ServerModel.fromJSON(dynamic json) {
     return CloudNetV3ServerModel(
-      json['id'] as int,
+      json['id'] as String,
       json['name'] as String,
       json['serverUrl'] as String,
       json['serverPort'] as int,
