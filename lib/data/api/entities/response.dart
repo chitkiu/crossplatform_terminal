@@ -16,4 +16,8 @@ class ResponseData {
     return this.error.isNotEmpty;
   }
 
+  @override
+  String toString() {
+    return 'ResponseData{success: $success, error: $error}';
+  }
 }

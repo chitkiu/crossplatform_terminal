@@ -1,27 +1,26 @@
 
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:crossplatform_terminal/constants.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 import '../../domain/content_models.dart';
 import 'entities/response.dart';
 
 class HttpApiRequests {
   HttpApiRequests(
-    this.scheme,
-    this.host
+    this.serverURL
   );
 
-  final String scheme;
-  /// Host should be with port
-  final String host;
+  final String serverURL;
 
   Map<String, String> _authHeader;
 
   Future<List<AuthDataModel>> getAuthData() {
     Dio dio = Dio(BaseOptions(
-        baseUrl:
-        "$scheme://$host",
+        baseUrl: serverURL,
         contentType: "application/json",
         headers: _authHeader
     )
@@ -41,8 +40,7 @@ class HttpApiRequests {
 
   Future<List<SSHConnectionModel>> getSSHServers() {
     Dio dio = Dio(BaseOptions(
-        baseUrl:
-        "$scheme://$host",
+        baseUrl: serverURL,
         contentType: "application/json",
         headers: _authHeader
     )
@@ -62,8 +60,7 @@ class HttpApiRequests {
 
   Future<List<CloudNetV3ServerModel>> getCloudNetV3Servers() {
     Dio dio = Dio(BaseOptions(
-        baseUrl:
-        "$scheme://$host",
+        baseUrl: serverURL,
         contentType: "application/json",
         headers: _authHeader
     )
@@ -83,8 +80,7 @@ class HttpApiRequests {
 
   Future<ResponseData> login(String user, String password) {
     Dio dio = Dio(BaseOptions(
-        baseUrl:
-        "$scheme://$host",
+        baseUrl: serverURL,
         contentType: "application/json"
     )
     );
@@ -107,6 +103,44 @@ class HttpApiRequests {
       }
       return ResponseData(
         error: "Cannot auth"
+      );
+    })
+    .then((result) {
+      if(result.isSuccess()) {
+        return Constants.saveData(Constants.TOKEN_PREF, _authHeader["Authorization"].split("Bearer ").first).then((value) => result);
+      } else {
+        return Future.value(result);
+      }
+    });
+  }
+
+  Future<ResponseData> validateToken(String token) {
+    _authHeader = Map()..putIfAbsent("Authorization", () => "Bearer $token");
+    Dio dio = Dio(BaseOptions(
+        baseUrl: serverURL,
+        contentType: "application/json",
+      headers: _authHeader
+    )
+    );
+    return dio.post<String>(
+      "/validate"
+    ).then((response) {
+      dynamic data = JsonDecoder().convert(response.data);
+      if (data is Map) {
+        if(data["success"] as bool) {
+          return ResponseData(
+              success: "true"
+          );
+        } else {
+          _authHeader = null;
+          return ResponseData(
+              error: "Cannot auth"
+          );
+        }
+      }
+      _authHeader = null;
+      return ResponseData(
+          error: "Cannot auth"
       );
     });
   }
