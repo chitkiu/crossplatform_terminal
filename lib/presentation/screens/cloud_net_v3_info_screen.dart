@@ -130,7 +130,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                             },
                           );
                         }
-                        return _text("");
+                        return _text("Loading...");
                       },
                     )
                   ],
@@ -143,9 +143,13 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
               print(snapshot.error);
               return _cannotAuth();
             }
-            return _text("");
+            return _text("Loading...");
           },
         ),
+          floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.refresh),
+            onPressed: () => setState(() {}),
+          )
       );
 
   Widget _cannotAuth() {

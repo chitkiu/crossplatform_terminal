@@ -48,5 +48,10 @@ class SSHModelRepository extends ModelRepository {
   }
 
   @override
+  void clearModels() {
+    _models.clear();
+  }
+
+  @override
   ContentModel operator [](int index) => _models[index];
 }

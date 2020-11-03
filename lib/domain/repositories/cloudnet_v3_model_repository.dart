@@ -32,5 +32,10 @@ class CloudNetV3ModelRepository extends ModelRepository {
   }
 
   @override
+  void clearModels() {
+    _models.clear();
+  }
+
+  @override
   ContentModel operator [](int index) => _models[index];
 }

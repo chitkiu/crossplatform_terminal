@@ -8,6 +8,8 @@ abstract class ModelRepository {
 
   void addModel(ContentModel model);
 
+  void clearModels();
+
   void removeModel(ContentModel model);
 
   void removeModelAtPosition(int position);
