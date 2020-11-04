@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import '../../domain/content_models.dart';
 import 'package:websocket/websocket.dart';
 
@@ -27,6 +28,21 @@ class CloudNetV3Requests {
       } else {
         return Future.error("Cannot parse JSON");
       }
+    });
+  }
+
+  Future<bool> stopService(String uuid) {
+    Dio dio = Dio(BaseOptions(
+        baseUrl:
+            "${_data.getScheme()}://${_data.serverUrl}:${_data.serverPort}",
+        headers: _authHeader));
+    return dio.get<String>("/api/services/$uuid/stop").then((response) {
+      dynamic data = JsonDecoder().convert(response.data);
+      return Future.value(data is Map);
+    }).catchError((error, stackTrace) {
+      debugPrint("Error occurred when try to stop service with uuid $uuid");
+      debugPrint(error);
+      debugPrint(stackTrace);
     });
   }
 

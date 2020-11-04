@@ -97,12 +97,38 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       crossAxisAlignment: CrossAxisAlignment.center,
                                       children: <Widget>[
-                                        _text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId}"),
+                                        _text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})"),
                                         new Row(
                                           children: [
                                             Padding(
                                                 padding: EdgeInsets.only(right: 10),
-                                                child: _button("Stop", () {})
+                                                child: _button("Stop", () {
+                                                  _request.stopService(serviceInfo.serviceId.uniqueId).then((success) {
+                                                    String mainText;
+                                                    if(success) {
+                                                      mainText = "Service ${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} stopped success";
+                                                    } else {
+                                                      mainText = "An error occurred when try to stop service ${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId}";
+                                                    }
+                                                    return showDialog(
+                                                      context: context,
+                                                      builder: (context) =>
+                                                          AlertDialog(
+                                                            title: new Text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId}"),
+                                                            content: new Text(mainText),
+                                                            actions: [
+                                                              new FlatButton(
+                                                                child: new Text("OK"),
+                                                                onPressed: () {
+                                                                  Navigator.pop(context);
+                                                                  setState(() {});
+                                                                },
+                                                              ),
+                                                            ],
+                                                          ),
+                                                    );
+                                                  });
+                                                })
                                             ),
                                             Padding(
                                                 padding: EdgeInsets.only(right: 10),
