@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../data/api/entities/cloud_net_v3_service.dart';
 import '../../data/api/entities/cloud_net_v3_status.dart';
@@ -23,9 +22,12 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
 
   _CloudNetV3Screen(this._model) : super() {
     _request = CloudNetV3Requests(_model);
+    _requestData = _dataRequest();
   }
 
-  final CloudNetV3ServerModel _model;
+  Future<CloudNetV3Status> _requestData;
+
+  CloudNetV3ServerModel _model;
   CloudNetV3Requests _request;
 
   @override
@@ -45,8 +47,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
           centerTitle: true,
         ),
         body: FutureBuilder(
-          future: _request.login().then((value) =>
-              _request.getStatus()),
+          future: _requestData,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data is CloudNetV3Status) {
@@ -130,15 +131,12 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                                                   });
                                                 })
                                             ),
-                                            Padding(
-                                                padding: EdgeInsets.only(right: 10),
-                                                child: _button("Open Console", () {
-                                                  Navigator.push(
-                                                    context,
-                                                    new MaterialPageRoute(builder: (ctxt) => CloudNetV3Terminal(_request, serviceInfo)),
-                                                  );
-                                                })
-                                            )
+                                            _button("Open Console", () {
+                                              Navigator.push(
+                                                context,
+                                                new MaterialPageRoute(builder: (ctxt) => CloudNetV3Terminal(_request, serviceInfo)),
+                                              );
+                                            })
                                           ],
                                         ),
                                       ],
@@ -167,7 +165,11 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
             }
             if (snapshot.hasError) {
               print(snapshot.error);
-              return _cannotAuth();
+              if(snapshot.error is InvalidCredential && (_model.username == null || _model.username.isEmpty || _model.password == null || _model.password.isEmpty)) {
+                _showDialog();
+              } else {
+                return _cannotAuth();
+              }
             }
             return _text("Loading...");
           },
@@ -202,6 +204,64 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
       hoverColor: ColorConstant.mainHover,
       child: _text(text),
     );
+  }
+
+  _showDialog() async {
+    TextEditingController username = TextEditingController();
+    TextEditingController pass = TextEditingController();
+    await Future.delayed(Duration(microseconds: 1));
+    showDialog(
+        context: context,
+        builder: (context) => new AlertDialog(
+          content: Container(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                TextField(
+                  controller: username,
+                  autofocus: true,
+                  decoration: new InputDecoration(
+                      labelText: 'Username'),
+                ),
+                TextField(
+                  obscureText: true,
+                  controller: pass,
+                  autofocus: false,
+                  decoration: new InputDecoration(
+                      labelText: 'Password'),
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            new FlatButton(
+                child: const Text('Cancel'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(this.context);
+                }),
+            new FlatButton(
+                child: const Text('Connect'),
+                onPressed: () {
+                  _model = _model.copyWith(
+                      username: username.text,
+                      password: pass.text
+                  );
+                  _request = CloudNetV3Requests(_model);
+                  setState(() {
+                    _requestData = _dataRequest();
+                    Navigator.pop(context);
+                  });
+                })
+          ],
+        )
+    );
+  }
+
+  Future<CloudNetV3Status> _dataRequest() {
+    return _request.checkIsCredentialExists().then((value) => _request.login()).then((value) => _request.getStatus());
   }
 
 }

@@ -136,6 +136,25 @@ class CloudNetV3ServerModel extends ContentModel {
     }
   }
 
+
+  @override
+  String toString() {
+    return 'CloudNetV3ServerModel{id: $id, serverUrl: $serverUrl, serverPort: $serverPort, username: $username, password: $password, screenPort: $screenPort, useHttps: $useHttps}';
+  }
+
+  CloudNetV3ServerModel copyWith({ id, title, serverUrl, serverPort, username, password, useHttps, screenPort}) {
+    return CloudNetV3ServerModel(
+      id ?? this.id,
+      title ?? this.title,
+      serverUrl ?? this.serverUrl,
+      serverPort ?? this.serverPort,
+      username ?? this.username,
+      password ?? this.password,
+      useHttps ?? this.useHttps,
+      screenPort: screenPort ?? this.screenPort
+    );
+  }
+
   factory CloudNetV3ServerModel.fromJSON(dynamic json) {
     return CloudNetV3ServerModel(
       json['id'] as String,

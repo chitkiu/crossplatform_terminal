@@ -1,26 +1,8 @@
 import '../content_models.dart';
 import 'base_model_repository.dart';
-import 'ssh_key.dart';
 
 class SSHModelRepository extends ModelRepository {
-  SSHModelRepository(): super() {
-    _models.add(SSHConnectionModel(
-      "Hetzner Database",
-      'database.aether-project.games',
-      22,
-      sshUsername: 'root',
-      sshPrivateKey: SSHKey.KEY,
-    ),
-    );
-    _models.add(SSHConnectionModel(
-      "Hetzner MC",
-      'mc.aether-project.games',
-      22,
-      sshUsername: 'root',
-      sshPrivateKey: SSHKey.KEY,
-    ),
-    );
-  }
+  SSHModelRepository(): super();
 
   List<SSHConnectionModel> _models = List();
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -11,7 +12,7 @@ import 'entities/cloud_net_v3_status.dart';
 class CloudNetV3Requests {
   CloudNetV3Requests(this._data);
 
-  final CloudNetV3ServerModel _data;
+  CloudNetV3ServerModel _data;
 
   Map<String, String> _authHeader;
   String authToken;
@@ -59,6 +60,16 @@ class CloudNetV3Requests {
         return Future.error("Cannot parse JSON");
       }
     });
+  }
+
+  Future<void> checkIsCredentialExists() {
+    if(_data.username == null || _data.username.isEmpty || _data.password == null || _data.password.isEmpty) {
+      return Future.error(InvalidCredential(_data.username, _data.password));
+    } else {
+      var completer = new Completer<Object>();
+      completer.complete(Object());
+      return completer.future;
+    }
   }
 
   Future<void> login() async {
@@ -110,5 +121,28 @@ class CloudNetV3Requests {
       }
       return Future.error("Cannot send command");
     });
+  }
+}
+
+class InvalidCredential {
+  InvalidCredential(this.username, this.password);
+  final String username;
+  final String password;
+
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is InvalidCredential &&
+          runtimeType == other.runtimeType &&
+          username == other.username &&
+          password == other.password;
+
+  @override
+  int get hashCode => username.hashCode ^ password.hashCode;
+
+  @override
+  String toString() {
+    return 'InvalidCredential{username: $username, password: $password}';
   }
 }
