@@ -164,10 +164,10 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
               }
             }
             if (snapshot.hasError) {
-              print(snapshot.error);
               if(snapshot.error is InvalidCredential && (_model.username == null || _model.username.isEmpty || _model.password == null || _model.password.isEmpty)) {
                 _showDialog();
               } else {
+                print("error: ${snapshot.error}");
                 return _cannotAuth();
               }
             }

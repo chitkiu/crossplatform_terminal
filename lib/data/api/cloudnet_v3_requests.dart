@@ -41,8 +41,8 @@ class CloudNetV3Requests {
       dynamic data = JsonDecoder().convert(response.data);
       return Future.value(data is Map);
     }).catchError((error, stackTrace) {
-      debugPrint("Error occurred when try to stop service with uuid $uuid");
-      debugPrint(error);
+      print("Error occurred when try to stop service with uuid $uuid");
+      print(error);
       debugPrint(stackTrace);
     });
   }

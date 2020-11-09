@@ -42,7 +42,7 @@ class _SSHTerminalScreenState extends State<SSHTerminalScreen> {
       onInput: _onInput,
       onBell: () {
         //TODO: Add sound
-        print("initState onBell");
+        debugPrint("initState onBell");
       },
     );
 
@@ -76,7 +76,6 @@ class _SSHTerminalScreenState extends State<SSHTerminalScreen> {
   }
 
   void _onDisconnect() {
-    print("SSH connection was closed");
     Navigator.pop(context);
   }
 
@@ -120,11 +119,7 @@ class _SSHTerminalScreenState extends State<SSHTerminalScreen> {
         centerTitle: true,
       ),
       body: GestureDetector(
-          onTap: () {
-            print("onTap");
-          },
           onTapDown: (info) {
-            print("onTapDown");
             setState(() {
               _mobileButtonVisible = !_mobileButtonVisible /*&&
                   (Platform.isAndroid || Platform.isIOS)*/;

@@ -3,8 +3,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:websocket/websocket.dart';
-import 'package:xterm/flutter.dart';
-import 'package:xterm/terminal/terminal.dart';
 
 import '../../data/api/entities/cloud_net_v3_service.dart';
 import '../../color_constants.dart';
@@ -29,9 +27,10 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
 
   WebSocket _webSocket;
 
-  Terminal _terminal;
-
-  FocusNode _terminalFocusNode;
+  ScrollController _scrollController;
+  String _terminalData = "";
+  Timer _scrollTimer;
+  bool _alreadyScrolled = false;
 
   TextEditingController _textEditingController = TextEditingController();
 
@@ -40,17 +39,32 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
   @override
   void initState() {
     super.initState();
-
-    _terminalFocusNode = FocusNode();
-
-    _terminal = Terminal();
-
+    _scrollController = ScrollController(
+      keepScrollOffset: true
+    );
+    if(_scrollTimer != null) {
+      _scrollTimer.cancel();
+    }
+    _scrollTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+      if (mounted) {
+        if(!_alreadyScrolled && _terminalData.isNotEmpty) {
+          _scrollToBottom();
+          _alreadyScrolled = true;
+          return;
+        }
+        double diff = _getDiff();
+        if(diff < 95 && diff > 0) {
+          _scrollToBottom();
+        }
+      } else {
+        timer.cancel();
+      }
+    });
     _request.screenStream(_service).then((websocket) {
       _webSocket = websocket;
       websocket.add("token=${_request.authToken}");
       websocket.stream.listen(
         (dynamic message) {
-          // debugPrint(message);
           dynamic json = JsonDecoder().convert(message);
           if (json is Map) {
             if (json.containsKey('auth_success') &&
@@ -59,11 +73,12 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
             } else if (json.containsKey('text')) {
               for (var value in (json['text'] as String).split("\n")) {
                 if (value.isNotEmpty && value.trim() != ">") {
-                  _terminal.write(value + "\r\n");
+                  _terminalData += (value + "\r\n");
+                  setState(() {});
                 }
               }
             } else if (json.containsKey('error')) {
-              debugPrint(json['error']);
+              print("error: ${json['error']}");
             }
           }
         },
@@ -73,7 +88,7 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
           }
         },
         onError: (error) {
-          debugPrint(error);
+          print("error: $error");
         },
       );
     });
@@ -86,28 +101,48 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
         if (_webSocket != null) {
           return _webSocket.close().then((value) => Future.value(true));
         }
+        if(_scrollTimer != null) {
+          _scrollTimer.cancel();
+        }
         return Future.value(true);
       },
       child: Scaffold(
           appBar: AppBar(
             leading: BackButton(color: ColorConstant.appBarText),
             backgroundColor: ColorConstant.appBarBackground,
-            title: Text(
-                "${_service.serviceId.taskName}-${_service.serviceId.taskServiceId}",
+            title: Text("${_service.serviceId.taskName}-${_service.serviceId.taskServiceId}",
                 style: TextStyle(color: ColorConstant.appBarText)),
             centerTitle: true,
+          ),
+          floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.keyboard_arrow_down),
+            onPressed: () {
+              _scrollToBottom();
+            },
           ),
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Flexible(
-                flex: 11,
-                child: TerminalView(
-                  terminal: _terminal,
-                  focusNode: _terminalFocusNode,
-                  autofocus: false,
+              Expanded(
+                  flex: 11,
+                  child: new SingleChildScrollView(
+                    scrollDirection: Axis.vertical,//
+                    controller: _scrollController,// .horizontal
+                    child: new SelectableText(
+                      _terminalData,
+                      showCursor: false,
+                      toolbarOptions: ToolbarOptions(
+                          copy: true,
+                          selectAll: true,
+                          cut: false,
+                          paste: false
+                      ),
+                      style: new TextStyle(
+                        fontSize: 16.0, color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
               Flexible(
                 flex: 1,
                 child: TextFormField(
@@ -149,9 +184,25 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
       _request.screenSendCommand(_service, command).asStream().listen((event) {
         _textEditingController.clear();
       }, onError: (error) {
-        print(error);
+        print("error: $error");
         _textEditingController.clear();
       });
+    }
+  }
+
+  double _getDiff() {
+    if(_scrollController.hasClients) {
+      return _scrollController.position.maxScrollExtent - _scrollController.offset;
+    } else {
+      return 0;
+    }
+  }
+
+  void _scrollToBottom() {
+    if(_scrollController.hasClients) {
+      _scrollController.jumpTo(
+          _scrollController.position.maxScrollExtent
+      );
     }
   }
 }
