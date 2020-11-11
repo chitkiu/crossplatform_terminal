@@ -8,6 +8,8 @@ job("Hello World!") {
     container("cirrusci/flutter") {
         shellScript {
             content = """
+            	ls -la
+                pwd
                 flutter doctor
             """
         }
