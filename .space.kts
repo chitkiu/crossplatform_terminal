@@ -21,6 +21,8 @@ job("Build and deploy web") {
     container("ubuntu") {
         shellScript {
             content = """
+                pwd
+                ls -la 
                 ls -la build/web
                 rsync
             """
