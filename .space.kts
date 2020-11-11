@@ -12,6 +12,8 @@ job("Build and deploy web") {
                 flutter upgrade
                 flutter pub get
                 flutter build web
+                pwd
+                ls -la 
             """
         }
     }
