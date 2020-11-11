@@ -17,7 +17,7 @@ job("Build and deploy web") {
                 flutter pub get
                 flutter build web
                 touch key.pem
-                newString=`echo ${"$"}STARTKEY ${"$"}ENDKEY | sed 's/ /\n/g'`
+                export newString=`echo ${"$"}STARTKEY ${"$"}ENDKEY | sed 's/ /\n/g'`
                 echo $newString >> key.pem
                 cat key.pem
                 chmod 600 key.pem
