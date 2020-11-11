@@ -8,9 +8,10 @@ job("Hello World!") {
     container("cirrusci/flutter") {
         shellScript {
             content = """
-            	ls -la
-                pwd
-                flutter doctor
+            	flutter config --enable-web
+                flutter upgrade
+                flutter pub get
+                flutter build web
             """
         }
     }
