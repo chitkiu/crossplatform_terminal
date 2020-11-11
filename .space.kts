@@ -12,18 +12,9 @@ job("Build and deploy web") {
                 flutter upgrade
                 flutter pub get
                 flutter build web
+                apt-get install -y rsync
                 pwd
                 ls -la 
-            """
-        }
-    }
-    
-    container("ubuntu") {
-        shellScript {
-            content = """
-                pwd
-                ls -la 
-                ls -la build/web
                 rsync
             """
         }
