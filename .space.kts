@@ -19,7 +19,9 @@ job("Build and deploy web") {
                 touch key.pem
                 echo ${"$"}KEY1 >> key.pem
                 echo ${"$"}KEY2 >> key.pem
-                cat key.pem
+                echo ${"$"}KEY1
+                echo "\n\n"
+                echo ${"$"}KEY2
                 chmod 600 key.pem
                 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem build/web root@${"$"}IP:${"$"}DIR
             """
