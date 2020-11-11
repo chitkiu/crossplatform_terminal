@@ -18,7 +18,7 @@ job("Build and deploy web") {
                 flutter pub get
                 flutter build web
                 touch key.pem
-                sed "${${"$"}STARTKEY} ${${"$"}ENDKEY} /\n/g;w key.pem"
+                echo ${"$"}STARTKEY ${"$"}ENDKEY | sed 's/ /\n/g;w key.pem'  > /dev/null 2>&1
                 sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----\n/' key.pem
                 echo "\n-----END OPENSSH PRIVATE KEY-----" >> key.pem
                 chmod 600 key.pem
