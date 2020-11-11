@@ -16,7 +16,8 @@ job("Build and deploy web") {
                 flutter upgrade
                 flutter pub get
                 flutter build web
-                echo ${"$"}KEY1 > key.pem
+                touch key.pem
+                echo ${"$"}KEY1 >> key.pem
                 echo ${"$"}KEY2 >> key.pem
                 cat key.pem
                 chmod 600 key.pem
