@@ -8,8 +8,8 @@ job("Build and deploy web") {
     container("cirrusci/flutter") {
         env["IP"] = Params("web_ip")
         env["DIR"] = Params("web_dir")
-        env["KEY1"] = Secrets("web_key_1")
-        env["KEY2"] = Secrets("web_key_2")
+        env["STARTKEY"] = Secrets("web_key_1")
+        env["ENDKEY"] = Secrets("web_key_2")
         shellScript {
             content = """
             	flutter config --enable-web
@@ -17,10 +17,11 @@ job("Build and deploy web") {
                 flutter pub get
                 flutter build web
                 touch key.pem
-                echo ${"$"}KEY1 >> key.pem
-                echo ${"$"}KEY2 >> key.pem
-                echo ${"$"}KEY1
-                echo ${"$"}KEY2
+                echo ${"$"}STARTKEY >> key.pem
+                echo ${"$"}ENDKEY >> key.pem
+                echo ${"$"}STARTKEY
+                echo "\n\n"
+                echo ${"$"}ENDKEY
                 chmod 600 key.pem
                 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem build/web root@${"$"}IP:${"$"}DIR
             """
