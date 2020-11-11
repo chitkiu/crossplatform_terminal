@@ -10,7 +10,7 @@ job("Build and deploy web") {
         env["DIR"] = Params("web_dir")
         env["STARTKEY"] = Secrets("web_key_1")
         env["ENDKEY"] = Secrets("web_key_2")
-        env["ENDKEY"] = ""
+        env["newString"] = ""
         shellScript {
             content = """
             	flutter config --enable-web
