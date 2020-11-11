@@ -21,8 +21,7 @@ job("Build and deploy web") {
                 echo ${"$"}KEY2 >> key.pem
                 cat key.pem
                 chmod 600 key.pem
-                ssh-keygen -R ${"$"}IP
-                scp -i key.pem build/web root@${"$"}IP:${"$"}DIR
+                scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem build/web root@${"$"}IP:${"$"}DIR
             """
         }
     }
