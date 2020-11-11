@@ -17,8 +17,8 @@ job("Build and deploy web") {
                 flutter pub get
                 flutter build web
                 touch key.pem
-                foo=$(${"$"}STARTKEY ${"$"}ENDKEY)
-                echo -e ${foo// /\\n} >> key.pem
+                newString=`echo ${"$"}STARTKEY ${"$"}ENDKEY | sed 's/ /\n/g'`
+                echo $newString >> key.pem
                 cat key.pem
                 chmod 600 key.pem
                 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem build/web root@${"$"}IP:${"$"}DIR
