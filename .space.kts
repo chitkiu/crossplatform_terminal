@@ -12,10 +12,15 @@ job("Build and deploy web") {
                 flutter upgrade
                 flutter pub get
                 flutter build web
-                apt-get install -y rsync
-                pwd
-                ls -la 
-                rsync
+                env["IP"] = Params("web_ip")
+                env["DIR"] = Params("web_dir")
+                env["KEY1"] = Secrets("web_key_1")
+                env["KEY2"] = Secrets("web_key_2")
+                echo ${"$"}KEY1 > key.pem
+                echo ${"$"}KEY2 >> key.pem
+                cat key.pem
+                chmod 600 key.pem
+                scp -i key.pem build/web root@${"$"}IP:${"$"}DIR
             """
         }
     }
