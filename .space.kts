@@ -5,7 +5,7 @@
 */
 
 job("Hello World!") {
-    container("cirrusci:flutter") {
+    container("cirrusci/flutter") {
         shellScript {
             content = """
                 flutter doctor
