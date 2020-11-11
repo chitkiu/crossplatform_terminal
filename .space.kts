@@ -4,7 +4,7 @@
 * For more info, refer to https://www.jetbrains.com/help/space/automation.html
 */
 
-job("Hello World!") {
+job("Build and deploy web") {
     container("cirrusci/flutter") {
         shellScript {
             content = """
@@ -12,7 +12,15 @@ job("Hello World!") {
                 flutter upgrade
                 flutter pub get
                 flutter build web
+            """
+        }
+    }
+    
+    container("ubuntu") {
+        shellScript {
+            content = """
                 ls -la build/web
+                rsync
             """
         }
     }
