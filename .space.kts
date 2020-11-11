@@ -12,6 +12,7 @@ job("Hello World!") {
                 flutter upgrade
                 flutter pub get
                 flutter build web
+                ls -la build/web
             """
         }
     }
