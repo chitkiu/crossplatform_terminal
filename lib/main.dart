@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'color_constants.dart';
 
 import 'presentation/screens/auth_screen.dart';
-import 'presentation/screens/main_screen.dart';
 
 void main() {
   runApp(MyApp());

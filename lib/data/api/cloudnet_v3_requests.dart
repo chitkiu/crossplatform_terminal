@@ -17,7 +17,7 @@ class CloudNetV3Requests {
   Map<String, String> _authHeader;
   String authToken;
 
-  Future<List<CloudNetV3Service>> getServices() {
+  Future<List<CloudNetV3Data>> getServices() {
     Dio dio = Dio(BaseOptions(
         baseUrl:
             "${_data.getScheme()}://${_data.serverUrl}:${_data.serverPort}",
@@ -25,7 +25,7 @@ class CloudNetV3Requests {
     return dio.get<String>("/api/services").then((response) {
       dynamic data = JsonDecoder().convert(response.data);
       if (data is List) {
-        return data.map((e) => CloudNetV3Service.fromJSON(e)).toList();
+        return data.map((e) => CloudNetV3Data.fromJSON(e)).toList();
       } else {
         return Future.error("Cannot parse JSON");
       }

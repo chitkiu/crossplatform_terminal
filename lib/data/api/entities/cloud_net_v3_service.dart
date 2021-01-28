@@ -1,3 +1,18 @@
+class CloudNetV3Data {
+  final CloudNetV3Service service;
+  final CloudNetV3FTPData ftp;
+
+  CloudNetV3Data(this.service, this.ftp);
+
+  factory CloudNetV3Data.fromJSON(Map<String, dynamic> data) {
+    return CloudNetV3Data(
+      CloudNetV3Service.fromJSON(data['serviceInfoSnapshot']),
+      CloudNetV3FTPData.fromJSONMap(data['ftpData']),
+    );
+  }
+
+}
+
 class CloudNetV3Service {
 
   final int creationTime;
@@ -69,5 +84,31 @@ class CloudNetV3ServiceAddress {
       data['ip'],
       data['port']
     );
+  }
+}
+
+class CloudNetV3FTPData {
+  final String ip;
+  final int port;
+  final String username;
+  final String password;
+
+  CloudNetV3FTPData(this.ip, this.port, this.username, this.password);
+
+  factory CloudNetV3FTPData.fromJSONMap(Map<String, dynamic> data) {
+    if(data == null) {
+      return null;
+    }
+    return CloudNetV3FTPData(
+        data['server'],
+        data['port'],
+        data['username'],
+        data['password']
+    );
+  }
+
+  @override
+  String toString() {
+    return 'CloudNetV3FTPData{ip: $ip, port: $port, username: $username, password: $password}';
   }
 }

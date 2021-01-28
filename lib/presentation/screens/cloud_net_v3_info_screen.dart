@@ -81,15 +81,14 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                       future: _request.getServices(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          List<CloudNetV3Service> data = snapshot.data as List<
-                              CloudNetV3Service>;
+                          List<CloudNetV3Data> data = snapshot.data as List<CloudNetV3Data>;
                           return ListView.builder(
                             scrollDirection: Axis.vertical,
                             shrinkWrap: true,
                             padding: EdgeInsets.zero,
                             itemCount: data.length,
                             itemBuilder: (BuildContext context, int index) {
-                              CloudNetV3Service serviceInfo = data[index];
+                              CloudNetV3Service serviceInfo = data[index].service;
                               return Column(
                                 children: <Widget>[
                                   Container(
@@ -100,44 +99,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                                       children: <Widget>[
                                         _text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})"),
                                         new Row(
-                                          children: [
-                                            Padding(
-                                                padding: EdgeInsets.only(right: 10),
-                                                child: _button("Stop", () {
-                                                  _request.stopService(serviceInfo.serviceId.uniqueId).then((success) {
-                                                    String mainText;
-                                                    if(success) {
-                                                      mainText = "Service ${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} stopped success";
-                                                    } else {
-                                                      mainText = "An error occurred when try to stop service ${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId}";
-                                                    }
-                                                    return showDialog(
-                                                      context: context,
-                                                      builder: (context) =>
-                                                          AlertDialog(
-                                                            title: new Text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId}"),
-                                                            content: new Text(mainText),
-                                                            actions: [
-                                                              new FlatButton(
-                                                                child: new Text("OK"),
-                                                                onPressed: () {
-                                                                  Navigator.pop(context);
-                                                                  setState(() {});
-                                                                },
-                                                              ),
-                                                            ],
-                                                          ),
-                                                    );
-                                                  });
-                                                })
-                                            ),
-                                            _button("Open Console", () {
-                                              Navigator.push(
-                                                context,
-                                                new MaterialPageRoute(builder: (ctxt) => CloudNetV3Terminal(_request, serviceInfo)),
-                                              );
-                                            })
-                                          ],
+                                          children: _getButtonsForItems(data[index]),
                                         ),
                                       ],
                                     ),
@@ -262,6 +224,87 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
 
   Future<CloudNetV3Status> _dataRequest() {
     return _request.checkIsCredentialExists().then((value) => _request.login()).then((value) => _request.getStatus());
+  }
+
+  List<Widget> _getButtonsForItems(CloudNetV3Data cloudNetV3Data) {
+    List<Widget> data = new List();
+    CloudNetV3Service serviceInfo = cloudNetV3Data.service;
+
+    if (cloudNetV3Data.ftp != null) {
+      data.add(Padding(
+          padding: EdgeInsets.only(right: 10),
+          child: _button("FTP data", () {
+            CloudNetV3FTPData ftpData = cloudNetV3Data.ftp;
+            showDialog(
+              context: context,
+              builder: (context) =>
+                  AlertDialog(
+                    title: new Text(
+                        "${serviceInfo.serviceId.taskName}-${serviceInfo
+                            .serviceId.taskServiceId}"),
+                    content: new SelectableText(
+                        "FTP server: ${ftpData.ip}\nFTP port: ${ftpData.port}\nFTP username: ${ftpData.username}\nFTP password: ${ftpData.password}\n"
+                    ),
+                    actions: [
+                      new FlatButton(
+                        child: new Text("OK"),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          setState(() {});
+                        },
+                      ),
+                    ],
+                  ),
+            );
+          })
+      ));
+    }
+
+    data.add(Padding(
+        padding: EdgeInsets.only(right: 10),
+        child: _button("Stop", () {
+          _request.stopService(serviceInfo.serviceId.uniqueId).then((success) {
+            String mainText;
+            if (success) {
+              mainText =
+              "Service ${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId
+                  .taskServiceId} stopped success";
+            } else {
+              mainText =
+              "An error occurred when try to stop service ${serviceInfo
+                  .serviceId.taskName}-${serviceInfo.serviceId.taskServiceId}";
+            }
+            return showDialog(
+              context: context,
+              builder: (context) =>
+                  AlertDialog(
+                    title: new Text(
+                        "${serviceInfo.serviceId.taskName}-${serviceInfo
+                            .serviceId.taskServiceId}"),
+                    content: new Text(mainText),
+                    actions: [
+                      new FlatButton(
+                        child: new Text("OK"),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          setState(() {});
+                        },
+                      ),
+                    ],
+                  ),
+            );
+          });
+        })
+    ));
+    data.add(_button("Open Console", () {
+      Navigator.push(
+        context,
+        new MaterialPageRoute(
+            builder: (ctxt) => CloudNetV3Terminal(_request, serviceInfo)),
+      );
+    }));
+
+    return data;
   }
 
 }

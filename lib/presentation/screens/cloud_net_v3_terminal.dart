@@ -38,22 +38,23 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
 
   @override
   void initState() {
-    super.initState();
     _scrollController = ScrollController(
       keepScrollOffset: true
     );
     if(_scrollTimer != null) {
       _scrollTimer.cancel();
     }
-    _scrollTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+    _scrollTimer = Timer.periodic(Duration(milliseconds: 250), (timer) {
       if (mounted) {
-        if(!_alreadyScrolled && _terminalData.isNotEmpty) {
+        if(!_scrollController.position.isScrollingNotifier.value
+            && !_alreadyScrolled
+            && _terminalData.isNotEmpty) {
           _scrollToBottom();
           _alreadyScrolled = true;
           return;
         }
         double diff = _getDiff();
-        if(diff < 95 && diff > 0) {
+        if(diff < 45 && diff > 0) {
           _scrollToBottom();
         }
       } else {
@@ -92,6 +93,7 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
         },
       );
     });
+    super.initState();
   }
 
   @override
