@@ -16,7 +16,7 @@ job("Build and deploy web") {
             	flutter config --enable-web
                 flutter upgrade
                 flutter pub get
-                flutter run --release --dart-define=FLUTTER_WEB_USE_EXPERIMENTAL_CANVAS_TEXT=true
+                flutter build web --release --dart-define=FLUTTER_WEB_USE_EXPERIMENTAL_CANVAS_TEXT=true
                 touch key.pem
                 echo ${"$"}STARTKEY ${"$"}ENDKEY | sed 's/ /\n/g;w key.pem'  > /dev/null 2>&1
                 sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----\n/' key.pem
