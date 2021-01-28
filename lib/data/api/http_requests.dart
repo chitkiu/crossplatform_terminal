@@ -18,46 +18,6 @@ class HttpApiRequests {
 
   Map<String, String> _authHeader;
 
-  Future<List<AuthDataModel>> getAuthData() {
-    Dio dio = Dio(BaseOptions(
-        baseUrl: serverURL,
-        contentType: "application/json",
-        headers: _authHeader
-    )
-    );
-    return dio.get<String>(
-      "/auth"
-    ).then((response) {
-      dynamic data = JsonDecoder().convert(response.data);
-
-      if (data is List) {
-        return data.map((e) => AuthDataModel.fromJSON(e)).toList();
-      } else {
-        return Future.error("Cannot parse data");
-      }
-    });
-  }
-
-  Future<List<SSHConnectionModel>> getSSHServers() {
-    Dio dio = Dio(BaseOptions(
-        baseUrl: serverURL,
-        contentType: "application/json",
-        headers: _authHeader
-    )
-    );
-    return dio.get<String>(
-      "/sshserver"
-    ).then((response) {
-      dynamic data = JsonDecoder().convert(response.data);
-
-      if (data is List) {
-        return data.map((e) => SSHConnectionModel.fromJSON(e)).toList();
-      } else {
-        return Future.error("Cannot parse data");
-      }
-    });
-  }
-
   Future<List<CloudNetV3ServerModel>> getCloudNetV3Servers() {
     Dio dio = Dio(BaseOptions(
         baseUrl: serverURL,
