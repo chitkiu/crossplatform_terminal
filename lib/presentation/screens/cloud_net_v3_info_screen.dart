@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../data/api/entities/cloud_net_v3_service.dart';
@@ -55,50 +53,53 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
             if (snapshot.hasData) {
               if (snapshot.data is CloudNetV3Status) {
                 CloudNetV3Status data = (snapshot.data as CloudNetV3Status);
-                return Column(
-                  children: [
-                    Row(
-                      children: [
-                        _text("Node name: ", topPadding: 10),
-                        _text(data.info.name, topPadding: 10)
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        _text("RAM(reserved/total): ", topPadding: 10),
-                        _text("${data.currentNetworkClusterNodeInfoSnapshot
-                            .reservedMemoryInMB}/${data
-                            .currentNetworkClusterNodeInfoSnapshot
-                            .maxMemoryInMB}", topPadding: 10)
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        _text("CPU load: ", topPadding: 10),
-                        _text("${data.currentNetworkClusterNodeInfoSnapshot
-                            .systemCpuUsage}", topPadding: 10)
-                      ],
-                    ),
-                    _text("Services:", topPadding: 10, bottomPadding: 10),
-                    FutureBuilder(
-                      future: _request.getServices(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          List<CloudNetV3Data> data = snapshot.data as List<CloudNetV3Data>;
-                          return ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            shrinkWrap: true,
-                            padding: EdgeInsets.zero,
-                            itemCount: data.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return _serverItem(data[index]);
-                            },
-                          );
-                        }
-                        return _text("Loading...");
-                      },
-                    )
-                  ],
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          _text("Node name: ", topPadding: 10),
+                          _text(data.info.name, topPadding: 10)
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          _text("RAM(reserved/total): ", topPadding: 10),
+                          _text("${data.currentNetworkClusterNodeInfoSnapshot
+                              .reservedMemoryInMB}/${data
+                              .currentNetworkClusterNodeInfoSnapshot
+                              .maxMemoryInMB}", topPadding: 10)
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          _text("CPU load: ", topPadding: 10),
+                          _text("${data.currentNetworkClusterNodeInfoSnapshot
+                              .systemCpuUsage}", topPadding: 10)
+                        ],
+                      ),
+                      _text("Services:", topPadding: 10, bottomPadding: 10),
+                      FutureBuilder(
+                        future: _request.getServices(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            List<CloudNetV3Data> data = snapshot.data as List<CloudNetV3Data>;
+                            return ListView.builder(
+                              scrollDirection: Axis.vertical,
+                              shrinkWrap: true,
+                              primary: false,
+                              padding: EdgeInsets.zero,
+                              itemCount: data.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return _serverItem(data[index]);
+                              },
+                            );
+                          }
+                          return _text("Loading...");
+                        },
+                      )
+                    ],
+                  ),
                 );
               } else {
                 return _wrongResponse();
@@ -175,7 +176,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
 
   Widget _getServerItemWidgetDependOnPlatform(CloudNetV3Data cloudNetV3Data) {
     CloudNetV3Service serviceInfo = cloudNetV3Data.service;
-    if(kIsWeb || Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+    if(MediaQuery.of(context).size.width >= 1080/*kIsWeb || Platform.isLinux || Platform.isMacOS || Platform.isWindows*/) {
       return new Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,

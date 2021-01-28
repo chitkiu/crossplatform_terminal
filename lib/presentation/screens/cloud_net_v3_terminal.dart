@@ -74,7 +74,7 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
             } else if (json.containsKey('text')) {
               for (var value in (json['text'] as String).split("\n")) {
                 if (value.isNotEmpty && value.trim() != ">") {
-                  _terminalData += (value + "\r\n");
+                  _terminalData += (value + "\n");
                   setState(() {});
                 }
               }
