@@ -14,9 +14,6 @@ dependencies:
   xterm:
     git: https://github.com/TerminalStudio/xterm.dart.git
 
-  dartssh:
-    git: https://github.com/GreenAppers/dartssh.git
-
   cupertino_icons: ^0.1.3
 
   websocket: ^0.0.5
@@ -24,6 +21,8 @@ dependencies:
   dio: ^3.0.10
 
   cross_local_storage: ^1.1.0
+
+  biometric_storage: ^1.1.0+1
 
 dev_dependencies:
   flutter_launcher_name: "^0.0.1"

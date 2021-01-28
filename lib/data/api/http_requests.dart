@@ -66,11 +66,7 @@ class HttpApiRequests {
       );
     })
     .then((result) {
-      if(result.isSuccess()) {
-        return Constants.saveData(Constants.TOKEN_PREF, _authHeader["Authorization"].split("Bearer ")[1]).then((value) => result);
-      } else {
-        return Future.value(result);
-      }
+      return Future.value(result);
     });
   }
 

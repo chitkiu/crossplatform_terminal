@@ -18,17 +18,11 @@ class _LoginScreenState extends State<StatefulWidget> {
   TextEditingController _loginController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
 
-  Future<ResponseData> _validateResponse;
+  bool _passwordLoadedFromStorage = false;
 
   @override
   void initState() {
     super.initState();
-    Constants.getData(Constants.LOGIN_PREF).then((value) {
-      if(value.isNotEmpty) {
-        _loginController.text = value;
-      }
-    });
-    _validateResponse = _getValidateResponse();
   }
 
   @override
@@ -75,20 +69,14 @@ class _LoginScreenState extends State<StatefulWidget> {
         minWidth: MediaQuery.of(context).size.width,
         padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
         onPressed: () {
-          Constants.init(_serverURLController.text);
-          Constants.requests.login(_loginController.text, _passwordController.text).then((response) {
-            if(response.isSuccess()) {
-              Constants.saveData(Constants.SERVER_NAME_PREF, _serverURLController.text).then((value) {
-                Constants.saveData(Constants.LOGIN_PREF, _loginController.text);
-              });
+          _auth().then((value) {
+            if(value.success == "true") {
               Navigator.pushReplacement(
                 context,
                 new MaterialPageRoute(builder: (ctxt) => MainScreen()
                 ),
               );
             } else {
-              _serverURLController.clear();
-              _loginController.clear();
               _passwordController.clear();
             }
           });
@@ -102,7 +90,7 @@ class _LoginScreenState extends State<StatefulWidget> {
 
     return Scaffold(
       body: FutureBuilder(
-        future: _validateResponse,
+        future: _getValidateResponse(),
         builder: (context, snapshot) {
           if(snapshot.hasData) {
             if (snapshot.data is ResponseData && (snapshot.data as ResponseData).isSuccess()) {
@@ -149,10 +137,9 @@ class _LoginScreenState extends State<StatefulWidget> {
     return Constants.getData(Constants.SERVER_NAME_PREF).then((serverUrl) {
       if(serverUrl.isNotEmpty) {
         _serverURLController.text = serverUrl;
-        return Constants.getData(Constants.TOKEN_PREF).then((token) {
-          if (token.isNotEmpty) {
-            Constants.init(serverUrl);
-            return Constants.requests.validateToken(token);
+        return _loadAuthData().then((value) {
+          if(_loginController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
+            return _auth();
           } else {
             return result;
           }
@@ -160,6 +147,40 @@ class _LoginScreenState extends State<StatefulWidget> {
       } else {
         return result;
       }
+    });
+  }
+
+  Future _loadAuthData() {
+    return Constants.getData(Constants.LOGIN_PREF).then((value) {
+      if(value.isNotEmpty) {
+        _loginController.text = value;
+      }
+      Constants.getSecureData(Constants.PASSWORD_PREF).then((value) {
+        if(value != null && value.isNotEmpty) {
+          _passwordLoadedFromStorage = true;
+          _passwordController.text = value;
+        }
+      });
+    });
+  }
+
+  Future<ResponseData> _auth() {
+    return Constants.init(_serverURLController.text).then((value) {
+      return Constants.requests.login(_loginController.text, _passwordController.text).then((response) {
+        if(response.isSuccess()) {
+          return Constants.saveData(Constants.SERVER_NAME_PREF, _serverURLController.text).then((value) {
+            Constants.saveData(Constants.LOGIN_PREF, _loginController.text);
+          }).then((value) {
+            if(!_passwordLoadedFromStorage) {
+              Constants.saveSecureData(Constants.PASSWORD_PREF, _passwordController.text);
+            }
+          }).then((value) {
+            return Future.value(ResponseData(success: "true"));
+          });
+        } else {
+          return Future.value(ResponseData(error: "Don't have saved session"));
+        }
+      });
     });
   }
 

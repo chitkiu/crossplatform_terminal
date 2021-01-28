@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../data/api/entities/cloud_net_v3_service.dart';
 import '../../data/api/entities/cloud_net_v3_status.dart';
@@ -56,27 +59,27 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                   children: [
                     Row(
                       children: [
-                        _text("Node name: "),
-                        _text(data.info.name)
+                        _text("Node name: ", topPadding: 10),
+                        _text(data.info.name, topPadding: 10)
                       ],
                     ),
                     Row(
                       children: [
-                        _text("RAM(reserved/total): "),
+                        _text("RAM(reserved/total): ", topPadding: 10),
                         _text("${data.currentNetworkClusterNodeInfoSnapshot
                             .reservedMemoryInMB}/${data
                             .currentNetworkClusterNodeInfoSnapshot
-                            .maxMemoryInMB}")
+                            .maxMemoryInMB}", topPadding: 10)
                       ],
                     ),
                     Row(
                       children: [
-                        _text("CPU load: "),
+                        _text("CPU load: ", topPadding: 10),
                         _text("${data.currentNetworkClusterNodeInfoSnapshot
-                            .systemCpuUsage}")
+                            .systemCpuUsage}", topPadding: 10)
                       ],
                     ),
-                    _text("Services:"),
+                    _text("Services:", topPadding: 10, bottomPadding: 10),
                     FutureBuilder(
                       future: _request.getServices(),
                       builder: (context, snapshot) {
@@ -88,31 +91,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                             padding: EdgeInsets.zero,
                             itemCount: data.length,
                             itemBuilder: (BuildContext context, int index) {
-                              CloudNetV3Service serviceInfo = data[index].service;
-                              return Column(
-                                children: <Widget>[
-                                  Container(
-                                    padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                                    child: new Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        _text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})"),
-                                        new Row(
-                                          children: _getButtonsForItems(data[index]),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                                    child: Container(
-                                      color: ColorConstant.mainHover,
-                                      height: 1.0,
-                                    ),
-                                  ),
-                                ],
-                              );
+                              return _serverItem(data[index]);
                             },
                           );
                         }
@@ -150,11 +129,19 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
     return _text("Wrong server response");
   }
 
-  Widget _text(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-          color: ColorConstant.mainText
+  Widget _text(String text, {double topPadding = 0.0, double bottomPadding = 0.0, double leftPadding = 0.0, double rightPadding = 0.0}) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: leftPadding,
+        right: rightPadding,
+        top: topPadding,
+        bottom: bottomPadding
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+            color: ColorConstant.mainText
+        ),
       ),
     );
   }
@@ -166,6 +153,51 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
       hoverColor: ColorConstant.mainHover,
       child: _text(text),
     );
+  }
+
+  Widget _serverItem(CloudNetV3Data cloudNetV3Data) {
+    return Column(
+      children: <Widget>[
+        Container(
+          padding: EdgeInsets.only(left: 15.0, right: 15.0),
+          child: _getServerItemWidgetDependOnPlatform(cloudNetV3Data),
+        ),
+        Container(
+          padding: EdgeInsets.only(left: 15.0, right: 15.0),
+          child: Container(
+            color: ColorConstant.mainHover,
+            height: 1.0,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _getServerItemWidgetDependOnPlatform(CloudNetV3Data cloudNetV3Data) {
+    CloudNetV3Service serviceInfo = cloudNetV3Data.service;
+    if(kIsWeb || Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+      return new Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          _text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})", topPadding: 10, bottomPadding: 10),
+          new Row(
+            children: _getButtonsForItems(cloudNetV3Data),
+          ),
+        ],
+      );
+    } else {
+      return new Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          _text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})", topPadding: 10, bottomPadding: 10),
+          new Row(
+            children: _getButtonsForItems(cloudNetV3Data),
+          ),
+        ],
+      );
+    }
   }
 
   _showDialog() async {
