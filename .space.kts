@@ -27,13 +27,13 @@ job("Build and deploy web") {
                 sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----\n/' key.pem
                 echo "\n-----END OPENSSH PRIVATE KEY-----" >> key.pem
                 chmod 600 key.pem
-                scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem -r build/web/* root@${"$"}IP:${"$"}DIR
-                ftp -n -i ${"$"}BUILD_IP <<EOF
+                lftp -n -i ${"$"}BUILD_IP <<EOF
                 user ${"$"}BUILD_USERNAME ${"$"}BUILD_PASSWORD
                 cd /files
                 put build/app/outputs/flutter-apk/app-release.apk app-release.apk
                 quit
                 EOF
+                scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem -r build/web/* root@${"$"}IP:${"$"}DIR
             """
         }
     }
