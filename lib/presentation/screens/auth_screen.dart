@@ -1,8 +1,9 @@
-import 'package:crossplatform_terminal/data/api/entities/response.dart';
 import 'package:flutter/material.dart';
 
 import '../../color_constants.dart';
 import '../../constants.dart';
+import '../../widget_builder.dart';
+import '../../data/api/entities/response.dart';
 import 'main_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -27,9 +28,9 @@ class _LoginScreenState extends State<StatefulWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final serverField = _textField("Server URL", _serverURLController);
-    final loginField = _textField("Login", _loginController);
-    final passwordField = _textField("Password", _passwordController, obscureText: true);
+    final serverField = MainWidgetBuilder.textInput("Server URL", _serverURLController);
+    final loginField = MainWidgetBuilder.textInput("Login", _loginController);
+    final passwordField = MainWidgetBuilder.textInput("Password", _passwordController, obscureText: true);
 
     final loginButton = Material(
       color: ColorConstant.mainButton,
@@ -156,28 +157,6 @@ class _LoginScreenState extends State<StatefulWidget> {
         }
       });
     });
-  }
-
-  Widget _textField(String hint, TextEditingController controller, {bool obscureText = false}) {
-    return TextField(
-      controller: controller,
-      style: TextStyle(color: ColorConstant.mainText),
-      autofocus: false,
-      obscureText: obscureText,
-      decoration: new InputDecoration(
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Color.fromARGB(127, 255, 255, 255)),
-          ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Color.fromARGB(127, 255, 255, 255)),
-          ),
-          border: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.black),
-          ),
-          labelStyle: TextStyle(color: Color.fromARGB(178, 255, 255, 255)),
-          labelText: hint,
-      ),
-    );
   }
 
 }

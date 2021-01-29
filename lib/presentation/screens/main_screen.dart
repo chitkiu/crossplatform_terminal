@@ -7,6 +7,7 @@ import '../../color_constants.dart';
 import '../../constants.dart';
 import '../../domain/repositories/base_model_repository.dart';
 import '../../domain/repositories/cloudnet_v3_model_repository.dart';
+import '../../widget_builder.dart';
 import '../list_child_provider.dart';
 
 class MainScreen extends StatefulWidget {
@@ -25,13 +26,7 @@ class _MainScreenState extends State<StatefulWidget> {
   Widget build(BuildContext context) {
     return Builder(builder: (ctx) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "Aether Project Control Panel",
-            style: TextStyle(color: ColorConstant.appBarText),
-          ),
-          backgroundColor: ColorConstant.appBarBackground,
-        ),
+        appBar: MainWidgetBuilder.appBar("Aether Project Control Panel"),
         body: ListView.builder(
             itemCount: _repo.getModels().length,
             itemBuilder: (BuildContext ctxt, int index) {

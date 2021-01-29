@@ -7,6 +7,7 @@ import 'package:websocket/websocket.dart';
 import '../../data/api/entities/cloud_net_v3_service.dart';
 import '../../color_constants.dart';
 import '../../data/api/cloudnet_v3_requests.dart';
+import '../../widget_builder.dart';
 
 class CloudNetV3Terminal extends StatefulWidget {
   CloudNetV3Terminal(this._request, this._service, {key}) : super(key: key);
@@ -109,12 +110,9 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
         return Future.value(true);
       },
       child: Scaffold(
-          appBar: AppBar(
-            leading: BackButton(color: ColorConstant.appBarText),
-            backgroundColor: ColorConstant.appBarBackground,
-            title: Text("${_service.serviceId.taskName}-${_service.serviceId.taskServiceId}",
-                style: TextStyle(color: ColorConstant.appBarText)),
-            centerTitle: true,
+          appBar: MainWidgetBuilder.appBar(
+              "${_service.serviceId.taskName}-${_service.serviceId.taskServiceId}",
+              leading: BackButton(color: ColorConstant.appBarText),
           ),
           floatingActionButton: FloatingActionButton(
             child: Icon(Icons.keyboard_arrow_down),
@@ -130,10 +128,10 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                  flex: 11,
+                  flex: 7,
                   child: new SingleChildScrollView(
-                    scrollDirection: Axis.vertical,//
-                    controller: _scrollController,// .horizontal
+                    scrollDirection: Axis.vertical,
+                    controller: _scrollController,
                     child: new SelectableText(
                       _terminalData,
                       showCursor: false,
@@ -151,17 +149,12 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
                 ),
               Flexible(
                 flex: 1,
-                child: TextFormField(
-                  autofocus: true,
-                  controller: _textEditingController,
-                  textInputAction: TextInputAction.done,
-                  onEditingComplete: _sendCommand,
-                  style: TextStyle(color: ColorConstant.mainText),
-                  maxLines: 1,
-                  decoration: InputDecoration(
-                    labelText: 'Enter your command',
-                    labelStyle: TextStyle(color: ColorConstant.hintText),
-                  ),
+                child: MainWidgetBuilder.textInput(
+                    "Command",
+                    _textEditingController,
+                    autofocus: true,
+                    textInputAction: TextInputAction.done,
+                    onEditingComplete: _sendCommand,
                 ),
               )
             ],
@@ -170,16 +163,16 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
   void _closeConnectionAlertDialog() async {
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: new Text("Something wrong"),
-        content: new Text("Error has occurred with console :("),
-        actions: [
-          new FlatButton(
-            child: new Text("OK"),
-            onPressed: () => Navigator.pop(context),
+      builder: (context) =>
+          MainWidgetBuilder.alertDialog(
+              MainWidgetBuilder.text("Error has occurred with console :("),
+              actions: [
+                MainWidgetBuilder.flatButton("OK", () {
+                  Navigator.pop(context);
+                })
+              ],
+              title: "Something wrong"
           ),
-        ],
-      ),
     );
     Navigator.pop(context);
   }

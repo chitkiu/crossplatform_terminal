@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../data/api/entities/cloud_net_v3_service.dart';
 import '../../data/api/entities/cloud_net_v3_status.dart';
 import '../../data/api/cloudnet_v3_requests.dart';
 import '../../color_constants.dart';
 import '../../domain/content_models.dart';
+import '../../widget_builder.dart';
 import 'cloud_net_v3_terminal.dart';
 
 class CloudNetV3Screen extends StatefulWidget {
@@ -37,18 +37,11 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
   @override
   Widget build(BuildContext context) =>
       Scaffold(
-        appBar: AppBar(
-          leading: BackButton(
-              color: ColorConstant.appBarText
-          ),
-          backgroundColor: ColorConstant.appBarBackground,
-          title: Text(
-              _model.title,
-              style: TextStyle(
-                  color: ColorConstant.appBarText
-              )
-          ),
-          centerTitle: true,
+        appBar: MainWidgetBuilder.appBar(
+            _model.title,
+            leading: BackButton(
+                color: ColorConstant.appBarText
+            )
         ),
         body: FutureBuilder(
           future: _requestData,
@@ -61,14 +54,14 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                     children: [
                       Row(
                         children: [
-                          _text("Node name: ", topPadding: 10),
-                          _text(data.info.name, topPadding: 10)
+                          MainWidgetBuilder.text("Node name: ", topPadding: 10),
+                          MainWidgetBuilder.text(data.info.name, topPadding: 10)
                         ],
                       ),
                       Row(
                         children: [
-                          _text("RAM(reserved/total): ", topPadding: 10),
-                          _text("${data.currentNetworkClusterNodeInfoSnapshot
+                          MainWidgetBuilder.text("RAM(reserved/total): ", topPadding: 10),
+                          MainWidgetBuilder.text("${data.currentNetworkClusterNodeInfoSnapshot
                               .reservedMemoryInMB}/${data
                               .currentNetworkClusterNodeInfoSnapshot
                               .maxMemoryInMB}", topPadding: 10)
@@ -76,12 +69,12 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                       ),
                       Row(
                         children: [
-                          _text("CPU load: ", topPadding: 10),
-                          _text("${data.currentNetworkClusterNodeInfoSnapshot
+                          MainWidgetBuilder.text("CPU load: ", topPadding: 10),
+                          MainWidgetBuilder.text("${data.currentNetworkClusterNodeInfoSnapshot
                               .systemCpuUsage}", topPadding: 10)
                         ],
                       ),
-                      _text("Services:", topPadding: 10, bottomPadding: 10),
+                      MainWidgetBuilder.text("Services:", topPadding: 10, bottomPadding: 10),
                       FutureBuilder(
                         future: _request.getServices(),
                         builder: (context, snapshot) {
@@ -98,7 +91,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                               },
                             );
                           }
-                          return _text("Loading...");
+                          return MainWidgetBuilder.text("Loading...");
                         },
                       )
                     ],
@@ -116,7 +109,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                 return _cannotAuth();
               }
             }
-            return _text("Loading...");
+            return MainWidgetBuilder.text("Loading...");
           },
         ),
           floatingActionButton: FloatingActionButton(
@@ -126,37 +119,11 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
       );
 
   Widget _cannotAuth() {
-    return _text("Auth Error");
+    return MainWidgetBuilder.text("Auth Error");
   }
 
   Widget _wrongResponse() {
-    return _text("Wrong server response");
-  }
-
-  Widget _text(String text, {double topPadding = 0.0, double bottomPadding = 0.0, double leftPadding = 0.0, double rightPadding = 0.0}) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: leftPadding,
-        right: rightPadding,
-        top: topPadding,
-        bottom: bottomPadding
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-            color: ColorConstant.mainText
-        ),
-      ),
-    );
-  }
-
-  Widget _button(String text, VoidCallback clickListener) {
-    return RaisedButton(
-      onPressed: clickListener,
-      color: ColorConstant.mainButton,
-      hoverColor: ColorConstant.mainHover,
-      child: _text(text),
-    );
+    return MainWidgetBuilder.text("Wrong server response");
   }
 
   Widget _serverItem(CloudNetV3Data cloudNetV3Data) {
@@ -184,7 +151,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          _text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})", topPadding: 10, bottomPadding: 10),
+          MainWidgetBuilder.text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})", topPadding: 10, bottomPadding: 10),
           new Row(
             children: _getButtonsForItems(cloudNetV3Data),
           ),
@@ -195,7 +162,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          _text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})", topPadding: 10, bottomPadding: 10),
+          MainWidgetBuilder.text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})", topPadding: 10, bottomPadding: 10),
           new Row(
             children: _getButtonsForItems(cloudNetV3Data),
           ),
@@ -210,24 +177,24 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
     await Future.delayed(Duration(microseconds: 1));
     showDialog(
         context: context,
-        builder: (context) => _alertDialog(
+        builder: (context) => MainWidgetBuilder.alertDialog(
             Container(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  _textField('Username', username),
-                  _textField('Password', pass)
+                  MainWidgetBuilder.textInput('Username', username),
+                  MainWidgetBuilder.textInput('Password', pass)
                 ],
               ),
             ),
             actions: <Widget>[
-              _flatButton("Cancel", () {
+              MainWidgetBuilder.flatButton("Cancel", () {
                 Navigator.pop(context);
                 Navigator.pop(this.context);
               }),
-              _flatButton("Connect", () {
+              MainWidgetBuilder.flatButton("Connect", () {
                 _model = _model.copyWith(
                     username: username.text,
                     password: pass.text
@@ -254,28 +221,28 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
     if (cloudNetV3Data.ftp != null) {
       data.add(Padding(
           padding: EdgeInsets.only(right: 10),
-          child: _button("FTP data", () {
+          child: MainWidgetBuilder.button("FTP data", () {
             CloudNetV3FTPData ftpData = cloudNetV3Data.ftp;
             showDialog(
                 context: context,
                 builder: (context) =>
-                    _alertDialog(
+                    MainWidgetBuilder.alertDialog(
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _textWithSelectableText(
+                            MainWidgetBuilder.textWithSelectableText(
                                 "Server IP: ", ftpData.ip),
-                            _textWithSelectableText(
+                            MainWidgetBuilder.textWithSelectableText(
                                 "Port: ", "${ftpData.port}"),
-                            _textWithSelectableText(
+                            MainWidgetBuilder.textWithSelectableText(
                                 "Username: ", ftpData.username),
-                            _textWithSelectableText(
+                            MainWidgetBuilder.textWithSelectableText(
                                 "Password: ", ftpData.password),
                           ],
                         ),
                         title: "${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} FTP data",
                         actions: [
-                          _flatButton("OK", () {
+                          MainWidgetBuilder.flatButton("OK", () {
                             Navigator.pop(context);
                             setState(() {});
                           })
@@ -288,7 +255,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
 
     data.add(Padding(
         padding: EdgeInsets.only(right: 10),
-        child: _button("Stop", () {
+        child: MainWidgetBuilder.button("Stop", () {
           _request.stopService(serviceInfo.serviceId.uniqueId).then((success) {
             String mainText;
             if (success) {
@@ -303,11 +270,11 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
             return showDialog(
                 context: context,
                 builder: (context) =>
-                    _alertDialog(
-                      _text(mainText),
+                    MainWidgetBuilder.alertDialog(
+                      MainWidgetBuilder.text(mainText),
                       title: "${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId}",
                       actions: [
-                        _flatButton("OK", () {
+                        MainWidgetBuilder.flatButton("OK", () {
                           Navigator.pop(context);
                           setState(() {});
                         })
@@ -317,7 +284,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
           });
         })
     ));
-    data.add(_button("Open Console", () {
+    data.add(MainWidgetBuilder.button("Open Console", () {
       Navigator.push(
         context,
         new MaterialPageRoute(
@@ -326,75 +293,6 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
     }));
 
     return data;
-  }
-
-  Widget _alertDialog(Widget content, {String title = "", List<Widget> actions}) {
-    Widget titleWidget = null;
-    if(title.isNotEmpty) {
-      titleWidget = _text(title);
-    }
-
-    ///Later added different dialog for MacOS and iOS
-    // if(kIsWeb || Platform.isWindows || Platform.isLinux || Platform.isAndroid) {
-      return Theme(
-        data: ThemeData(dialogBackgroundColor: ColorConstant.appBarBackground),
-        child: AlertDialog(
-          title: titleWidget,
-          content: content,
-          actions: actions,
-        ),
-      );
-    /*} else {
-      return CupertinoAlertDialog(
-          title: titleWidget,
-          content: content,
-          actions: actions,
-        );
-    }*/
-  }
-
-  Widget _textField(String hint, TextEditingController controller) {
-    return TextField(
-      controller: controller,
-      style: TextStyle(color: ColorConstant.mainText),
-      autofocus: true,
-      decoration: new InputDecoration(
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Color.fromARGB(127, 255, 255, 255)),
-          ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Color.fromARGB(127, 255, 255, 255)),
-          ),
-          border: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.black),
-          ),
-          labelStyle: TextStyle(color: Color.fromARGB(178, 255, 255, 255)),
-          labelText: hint),
-    );
-  }
-
-  Widget _selectableText(String data) {
-    return new SelectableText(
-        data,
-        style: TextStyle(color: ColorConstant.mainText)
-    );
-  }
-
-  Widget _flatButton(String data, VoidCallback onPressed) {
-    return new FlatButton(
-      child: Text(data),
-      textColor: ColorConstant.mainText,
-      onPressed: onPressed,
-    );
-  }
-
-  Widget _textWithSelectableText(String text, String selectableText) {
-    return Row(
-      children: [
-        _text(text),
-        _selectableText(selectableText)
-      ],
-    );
   }
 
 }
