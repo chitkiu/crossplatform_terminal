@@ -27,48 +27,22 @@ class _LoginScreenState extends State<StatefulWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final serverField = _textField("Server URL", _serverURLController);
+    final loginField = _textField("Login", _loginController);
+    final passwordField = _textField("Password", _passwordController, obscureText: true);
 
-    final serverField = TextField(
-      obscureText: false,
-      style: style,
-      controller: _serverURLController,
-      decoration: InputDecoration(
-          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-          hintText: "Server URL",
-          hintStyle: style,
-          border:
-          OutlineInputBorder(borderRadius: BorderRadius.circular(32.0))),
-    );
-    final loginField = TextField(
-      obscureText: false,
-      style: style,
-      controller: _loginController,
-      decoration: InputDecoration(
-          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-          hintText: "Login",
-          hintStyle: style,
-          border:
-          OutlineInputBorder(borderRadius: BorderRadius.circular(32.0))),
-    );
-    final passwordField = TextField(
-      obscureText: true,
-      style: style,
-      controller: _passwordController,
-      decoration: InputDecoration(
-          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-          hintText: "Password",
-          hintStyle: style,
-          border:
-          OutlineInputBorder(borderRadius: BorderRadius.circular(32.0))),
-    );
     final loginButton = Material(
-      elevation: 5.0,
-      borderRadius: BorderRadius.circular(30.0),
       color: ColorConstant.mainButton,
       child: MaterialButton(
         minWidth: MediaQuery.of(context).size.width,
         padding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
         onPressed: () {
+          if(_serverURLController.text.isEmpty
+              || _loginController.text.isEmpty
+              || _passwordController.text.isEmpty) {
+            return;
+          }
+
           _auth().then((value) {
             if(value.success == "true") {
               Navigator.pushReplacement(
@@ -182,6 +156,28 @@ class _LoginScreenState extends State<StatefulWidget> {
         }
       });
     });
+  }
+
+  Widget _textField(String hint, TextEditingController controller, {bool obscureText = false}) {
+    return TextField(
+      controller: controller,
+      style: TextStyle(color: ColorConstant.mainText),
+      autofocus: false,
+      obscureText: obscureText,
+      decoration: new InputDecoration(
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Color.fromARGB(127, 255, 255, 255)),
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Color.fromARGB(127, 255, 255, 255)),
+          ),
+          border: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black),
+          ),
+          labelStyle: TextStyle(color: Color.fromARGB(178, 255, 255, 255)),
+          labelText: hint,
+      ),
+    );
   }
 
 }
