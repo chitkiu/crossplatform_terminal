@@ -24,6 +24,9 @@ class CloudNetV3Screen extends StatefulWidget {
 
 class _CloudNetV3Screen extends State<CloudNetV3Screen> {
 
+  static const double DEFAULT_PADDING = 5;
+  static const double LANDSCAPE_PADDING = 40;
+
   _CloudNetV3Screen(this._model) : super() {
     _request = CloudNetV3Requests(_model);
     _requestData = _dataRequest();
@@ -43,73 +46,103 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                 color: ColorConstant.appBarText
             )
         ),
-        body: FutureBuilder(
-          future: _requestData,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              if (snapshot.data is CloudNetV3Status) {
-                CloudNetV3Status data = (snapshot.data as CloudNetV3Status);
-                return SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Row(
+        body: OrientationBuilder(
+          builder: (context, orientation) {
+            return FutureBuilder(
+              future: _requestData,
+              builder: (context, snapshot) {
+                double paddingDependOnOrientation = _getPaddingDependOnOrientation(orientation);
+                if (snapshot.hasData) {
+                  if (snapshot.data is CloudNetV3Status) {
+                    CloudNetV3Status data = (snapshot.data as CloudNetV3Status);
+                    return SingleChildScrollView(
+                      child: Column(
                         children: [
-                          MainWidgetBuilder.text("Node name: ", topPadding: 10),
-                          MainWidgetBuilder.text(data.info.name, topPadding: 10)
+                          Row(
+                            children: [
+                              MainWidgetBuilder.text(
+                                  "Node name: ",
+                                  topPadding: 10,
+                                  leftPadding: paddingDependOnOrientation
+                              ),
+                              MainWidgetBuilder.text(
+                                  data.info.name,
+                                  topPadding: 10,
+                                  rightPadding: paddingDependOnOrientation
+                              )
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              MainWidgetBuilder.text(
+                                  "RAM(reserved/total): ",
+                                  topPadding: 10,
+                                  leftPadding: paddingDependOnOrientation
+                              ),
+                              MainWidgetBuilder.text(
+                                  "${data.currentNetworkClusterNodeInfoSnapshot.reservedMemoryInMB}"
+                                      +"/${data.currentNetworkClusterNodeInfoSnapshot.maxMemoryInMB}",
+                                  topPadding: 10,
+                                  rightPadding: paddingDependOnOrientation
+                              )
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              MainWidgetBuilder.text(
+                                  "CPU load: ",
+                                  topPadding: 10,
+                                  leftPadding: paddingDependOnOrientation
+                              ),
+                              MainWidgetBuilder.text(
+                                  "${data.currentNetworkClusterNodeInfoSnapshot.systemCpuUsage}",
+                                  topPadding: 10,
+                                  rightPadding: paddingDependOnOrientation
+                              )
+                            ],
+                          ),
+                          MainWidgetBuilder.text(
+                              "Services:",
+                              topPadding: 10,
+                              bottomPadding: 10
+                          ),
+                          FutureBuilder(
+                            future: _request.getServices(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                List<CloudNetV3Data> data = snapshot.data as List<CloudNetV3Data>;
+                                return ListView.builder(
+                                  scrollDirection: Axis.vertical,
+                                  shrinkWrap: true,
+                                  primary: false,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: data.length,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    return _serverItem(data[index], orientation);
+                                  },
+                                );
+                              }
+                              return MainWidgetBuilder.text("Loading...", leftPadding: paddingDependOnOrientation);
+                            },
+                          )
                         ],
                       ),
-                      Row(
-                        children: [
-                          MainWidgetBuilder.text("RAM(reserved/total): ", topPadding: 10),
-                          MainWidgetBuilder.text("${data.currentNetworkClusterNodeInfoSnapshot
-                              .reservedMemoryInMB}/${data
-                              .currentNetworkClusterNodeInfoSnapshot
-                              .maxMemoryInMB}", topPadding: 10)
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          MainWidgetBuilder.text("CPU load: ", topPadding: 10),
-                          MainWidgetBuilder.text("${data.currentNetworkClusterNodeInfoSnapshot
-                              .systemCpuUsage}", topPadding: 10)
-                        ],
-                      ),
-                      MainWidgetBuilder.text("Services:", topPadding: 10, bottomPadding: 10),
-                      FutureBuilder(
-                        future: _request.getServices(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            List<CloudNetV3Data> data = snapshot.data as List<CloudNetV3Data>;
-                            return ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              shrinkWrap: true,
-                              primary: false,
-                              padding: EdgeInsets.zero,
-                              itemCount: data.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return _serverItem(data[index]);
-                              },
-                            );
-                          }
-                          return MainWidgetBuilder.text("Loading...");
-                        },
-                      )
-                    ],
-                  ),
-                );
-              } else {
-                return _wrongResponse();
-              }
-            }
-            if (snapshot.hasError) {
-              if(snapshot.error is InvalidCredential && (_model.username == null || _model.username.isEmpty || _model.password == null || _model.password.isEmpty)) {
-                _showDialog();
-              } else {
-                print("error: ${snapshot.error}");
-                return _cannotAuth();
-              }
-            }
-            return MainWidgetBuilder.text("Loading...");
+                    );
+                  } else {
+                    return _wrongResponse();
+                  }
+                }
+                if (snapshot.hasError) {
+                  if(snapshot.error is InvalidCredential && (_model.username == null || _model.username.isEmpty || _model.password == null || _model.password.isEmpty)) {
+                    _showDialog();
+                  } else {
+                    print("error: ${snapshot.error}");
+                    return MainWidgetBuilder.text("Auth Error", leftPadding: paddingDependOnOrientation);
+                  }
+                }
+                return MainWidgetBuilder.text("Loading...", leftPadding: paddingDependOnOrientation);
+              },
+            );
           },
         ),
           floatingActionButton: FloatingActionButton(
@@ -118,23 +151,22 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
           )
       );
 
-  Widget _cannotAuth() {
-    return MainWidgetBuilder.text("Auth Error");
-  }
-
   Widget _wrongResponse() {
     return MainWidgetBuilder.text("Wrong server response");
   }
 
-  Widget _serverItem(CloudNetV3Data cloudNetV3Data) {
+  Widget _serverItem(CloudNetV3Data cloudNetV3Data, Orientation orientation) {
+    double paddingDependOnOrientation = _getPaddingDependOnOrientation(orientation);
     return Column(
       children: <Widget>[
+        _getServerItemWidgetDependOnPlatform(cloudNetV3Data, orientation),
         Container(
-          padding: EdgeInsets.only(left: 15.0, right: 15.0),
-          child: _getServerItemWidgetDependOnPlatform(cloudNetV3Data),
-        ),
-        Container(
-          padding: EdgeInsets.only(left: 15.0, right: 15.0),
+          padding: EdgeInsets.only(
+              left: paddingDependOnOrientation,
+              right: paddingDependOnOrientation,
+              top: 5,
+              bottom: 5
+          ),
           child: Container(
             color: ColorConstant.mainHover,
             height: 1.0,
@@ -144,16 +176,21 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
     );
   }
 
-  Widget _getServerItemWidgetDependOnPlatform(CloudNetV3Data cloudNetV3Data) {
+  Widget _getServerItemWidgetDependOnPlatform(CloudNetV3Data cloudNetV3Data, Orientation orientation) {
     CloudNetV3Service serviceInfo = cloudNetV3Data.service;
-    if(MediaQuery.of(context).size.width >= 1080/*kIsWeb || Platform.isLinux || Platform.isMacOS || Platform.isWindows*/) {
+    double paddingDependOnOrientation = _getPaddingDependOnOrientation(orientation);
+    if(MediaQuery.of(context).size.width >= 1080 || orientation == Orientation.landscape) {
       return new Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          MainWidgetBuilder.text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})", topPadding: 10, bottomPadding: 10),
+          MainWidgetBuilder.text(
+              "${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})",
+              leftPadding: paddingDependOnOrientation,
+              rightPadding: paddingDependOnOrientation
+          ),
           new Row(
-            children: _getButtonsForItems(cloudNetV3Data),
+            children: _getButtonsForItems(cloudNetV3Data, orientation),
           ),
         ],
       );
@@ -162,9 +199,13 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          MainWidgetBuilder.text("${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})", topPadding: 10, bottomPadding: 10),
+          MainWidgetBuilder.text(
+              "${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} (${serviceInfo.lifeCycle})",
+              leftPadding: paddingDependOnOrientation,
+              rightPadding: paddingDependOnOrientation
+          ),
           new Row(
-            children: _getButtonsForItems(cloudNetV3Data),
+            children: _getButtonsForItems(cloudNetV3Data, orientation),
           ),
         ],
       );
@@ -214,13 +255,15 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
     return _request.checkIsCredentialExists().then((value) => _request.login()).then((value) => _request.getStatus());
   }
 
-  List<Widget> _getButtonsForItems(CloudNetV3Data cloudNetV3Data) {
+  List<Widget> _getButtonsForItems(CloudNetV3Data cloudNetV3Data, Orientation orientation) {
+    double paddingDependOnOrientation = _getPaddingDependOnOrientation(
+        orientation);
     List<Widget> data = [];
     CloudNetV3Service serviceInfo = cloudNetV3Data.service;
 
     if (cloudNetV3Data.ftp != null) {
       data.add(Padding(
-          padding: EdgeInsets.only(right: 10),
+          padding: EdgeInsets.only(left: paddingDependOnOrientation, right: 10),
           child: MainWidgetBuilder.button("FTP data", () {
             CloudNetV3FTPData ftpData = cloudNetV3Data.ftp;
             showDialog(
@@ -240,7 +283,8 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                                 "Password: ", ftpData.password),
                           ],
                         ),
-                        title: "${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} FTP data",
+                        title: "${serviceInfo.serviceId.taskName}-${serviceInfo
+                            .serviceId.taskServiceId} FTP data",
                         actions: [
                           MainWidgetBuilder.flatButton("OK", () {
                             Navigator.pop(context);
@@ -253,8 +297,17 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
       ));
     }
 
+    double paddingForStop = paddingDependOnOrientation;
+    if(orientation == Orientation.landscape) {
+      if(cloudNetV3Data.ftp == null) {
+        paddingForStop = paddingDependOnOrientation;
+      } else {
+        paddingForStop = 0;
+      }
+    }
+
     data.add(Padding(
-        padding: EdgeInsets.only(right: 10),
+        padding: EdgeInsets.only(left: paddingForStop, right: 10),
         child: MainWidgetBuilder.button("Stop", () {
           _request.stopService(serviceInfo.serviceId.uniqueId).then((success) {
             String mainText;
@@ -272,7 +325,8 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                 builder: (context) =>
                     MainWidgetBuilder.alertDialog(
                       MainWidgetBuilder.text(mainText),
-                      title: "${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId}",
+                      title: "${serviceInfo.serviceId.taskName}-${serviceInfo
+                          .serviceId.taskServiceId}",
                       actions: [
                         MainWidgetBuilder.flatButton("OK", () {
                           Navigator.pop(context);
@@ -284,15 +338,25 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
           });
         })
     ));
-    data.add(MainWidgetBuilder.button("Open Console", () {
-      Navigator.push(
-        context,
-        new MaterialPageRoute(
-            builder: (ctxt) => CloudNetV3Terminal(_request, serviceInfo)),
-      );
-    }));
+    data.add(
+        Padding(
+            padding: EdgeInsets.only(right: paddingDependOnOrientation),
+            child: MainWidgetBuilder.button("Open Console", () {
+              Navigator.push(context, new MaterialPageRoute(builder: (ctxt) =>
+                  CloudNetV3Terminal(_request, serviceInfo)),);
+            })
+        )
+    );
 
     return data;
+  }
+
+  double _getPaddingDependOnOrientation(Orientation orientation) {
+    double paddingDependOnOrientation = DEFAULT_PADDING;
+    if(orientation == Orientation.landscape) {
+      paddingDependOnOrientation = LANDSCAPE_PADDING;
+    }
+    return paddingDependOnOrientation;
   }
 
 }
