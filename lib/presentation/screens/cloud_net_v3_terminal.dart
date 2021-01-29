@@ -119,7 +119,11 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
           floatingActionButton: FloatingActionButton(
             child: Icon(Icons.keyboard_arrow_down),
             onPressed: () {
-              _scrollToBottom();
+              if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+                FocusScope.of(context).unfocus();
+              } else {
+                _scrollToBottom();
+              }
             },
           ),
           body: Column(
@@ -201,7 +205,7 @@ class _CloudNetV3Terminal extends State<CloudNetV3Terminal> {
   }
 
   void _scrollToBottom() {
-    if(_scrollController.hasClients) {
+    if (_scrollController.hasClients) {
       _scrollController.jumpTo(
           _scrollController.position.maxScrollExtent
       );

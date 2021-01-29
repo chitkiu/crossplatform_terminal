@@ -19,6 +19,9 @@ class MyApp extends StatelessWidget {
           canvasColor: ColorConstant.mainBackground,
           primarySwatch: Colors.indigo,
           visualDensity: VisualDensity.adaptivePlatformDensity,
+          appBarTheme: Theme.of(context)
+              .appBarTheme
+              .copyWith(brightness: Brightness.dark, backgroundColor: Colors.white)
         ),
         home: AuthScreen()
     );
