@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../data/api/entities/cloud_net_v3_service.dart';
@@ -207,50 +210,35 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
     await Future.delayed(Duration(microseconds: 1));
     showDialog(
         context: context,
-        builder: (context) => new AlertDialog(
-          content: Container(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextField(
-                  controller: username,
-                  autofocus: true,
-                  decoration: new InputDecoration(
-                      labelText: 'Username'),
-                ),
-                TextField(
-                  obscureText: true,
-                  controller: pass,
-                  autofocus: false,
-                  decoration: new InputDecoration(
-                      labelText: 'Password'),
-                )
-              ],
+        builder: (context) => _alertDialog(
+            Container(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  _textField('Username', username),
+                  _textField('Password', pass)
+                ],
+              ),
             ),
-          ),
-          actions: <Widget>[
-            new FlatButton(
-                child: const Text('Cancel'),
-                onPressed: () {
+            actions: <Widget>[
+              _flatButton("Cancel", () {
+                Navigator.pop(context);
+                Navigator.pop(this.context);
+              }),
+              _flatButton("Connect", () {
+                _model = _model.copyWith(
+                    username: username.text,
+                    password: pass.text
+                );
+                _request = CloudNetV3Requests(_model);
+                setState(() {
+                  _requestData = _dataRequest();
                   Navigator.pop(context);
-                  Navigator.pop(this.context);
-                }),
-            new FlatButton(
-                child: const Text('Connect'),
-                onPressed: () {
-                  _model = _model.copyWith(
-                      username: username.text,
-                      password: pass.text
-                  );
-                  _request = CloudNetV3Requests(_model);
-                  setState(() {
-                    _requestData = _dataRequest();
-                    Navigator.pop(context);
-                  });
-                })
-          ],
+                });
+              })
+            ]
         )
     );
   }
@@ -260,7 +248,7 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
   }
 
   List<Widget> _getButtonsForItems(CloudNetV3Data cloudNetV3Data) {
-    List<Widget> data = new List();
+    List<Widget> data = [];
     CloudNetV3Service serviceInfo = cloudNetV3Data.service;
 
     if (cloudNetV3Data.ftp != null) {
@@ -269,25 +257,30 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
           child: _button("FTP data", () {
             CloudNetV3FTPData ftpData = cloudNetV3Data.ftp;
             showDialog(
-              context: context,
-              builder: (context) =>
-                  AlertDialog(
-                    title: new Text(
-                        "${serviceInfo.serviceId.taskName}-${serviceInfo
-                            .serviceId.taskServiceId}"),
-                    content: new SelectableText(
-                        "FTP server: ${ftpData.ip}\nFTP port: ${ftpData.port}\nFTP username: ${ftpData.username}\nFTP password: ${ftpData.password}\n"
-                    ),
-                    actions: [
-                      new FlatButton(
-                        child: new Text("OK"),
-                        onPressed: () {
-                          Navigator.pop(context);
-                          setState(() {});
-                        },
-                      ),
-                    ],
-                  ),
+                context: context,
+                builder: (context) =>
+                    _alertDialog(
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _textWithSelectableText(
+                                "Server IP: ", ftpData.ip),
+                            _textWithSelectableText(
+                                "Port: ", "${ftpData.port}"),
+                            _textWithSelectableText(
+                                "Username: ", ftpData.username),
+                            _textWithSelectableText(
+                                "Password: ", ftpData.password),
+                          ],
+                        ),
+                        title: "${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId} FTP data",
+                        actions: [
+                          _flatButton("OK", () {
+                            Navigator.pop(context);
+                            setState(() {});
+                          })
+                        ]
+                    )
             );
           })
       ));
@@ -308,23 +301,18 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
                   .serviceId.taskName}-${serviceInfo.serviceId.taskServiceId}";
             }
             return showDialog(
-              context: context,
-              builder: (context) =>
-                  AlertDialog(
-                    title: new Text(
-                        "${serviceInfo.serviceId.taskName}-${serviceInfo
-                            .serviceId.taskServiceId}"),
-                    content: new Text(mainText),
-                    actions: [
-                      new FlatButton(
-                        child: new Text("OK"),
-                        onPressed: () {
+                context: context,
+                builder: (context) =>
+                    _alertDialog(
+                      _text(mainText),
+                      title: "${serviceInfo.serviceId.taskName}-${serviceInfo.serviceId.taskServiceId}",
+                      actions: [
+                        _flatButton("OK", () {
                           Navigator.pop(context);
                           setState(() {});
-                        },
-                      ),
-                    ],
-                  ),
+                        })
+                      ],
+                    )
             );
           });
         })
@@ -338,6 +326,75 @@ class _CloudNetV3Screen extends State<CloudNetV3Screen> {
     }));
 
     return data;
+  }
+
+  Widget _alertDialog(Widget content, {String title = "", List<Widget> actions}) {
+    Widget titleWidget = null;
+    if(title.isNotEmpty) {
+      titleWidget = _text(title);
+    }
+
+    ///Later added different dialog for MacOS and iOS
+    // if(kIsWeb || Platform.isWindows || Platform.isLinux || Platform.isAndroid) {
+      return Theme(
+        data: ThemeData(dialogBackgroundColor: ColorConstant.appBarBackground),
+        child: AlertDialog(
+          title: titleWidget,
+          content: content,
+          actions: actions,
+        ),
+      );
+    /*} else {
+      return CupertinoAlertDialog(
+          title: titleWidget,
+          content: content,
+          actions: actions,
+        );
+    }*/
+  }
+
+  Widget _textField(String hint, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      style: TextStyle(color: ColorConstant.mainText),
+      autofocus: true,
+      decoration: new InputDecoration(
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Color.fromARGB(127, 255, 255, 255)),
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Color.fromARGB(127, 255, 255, 255)),
+          ),
+          border: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black),
+          ),
+          labelStyle: TextStyle(color: Color.fromARGB(178, 255, 255, 255)),
+          labelText: hint),
+    );
+  }
+
+  Widget _selectableText(String data) {
+    return new SelectableText(
+        data,
+        style: TextStyle(color: ColorConstant.mainText)
+    );
+  }
+
+  Widget _flatButton(String data, VoidCallback onPressed) {
+    return new FlatButton(
+      child: Text(data),
+      textColor: ColorConstant.mainText,
+      onPressed: onPressed,
+    );
+  }
+
+  Widget _textWithSelectableText(String text, String selectableText) {
+    return Row(
+      children: [
+        _text(text),
+        _selectableText(selectableText)
+      ],
+    );
   }
 
 }

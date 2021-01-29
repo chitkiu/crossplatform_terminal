@@ -11,5 +11,5 @@ class ColorConstant {
   static final Color hintText = Color.fromARGB(41, 255, 255, 255);
   static final Color mainHover = Color.fromARGB(155, 39, 39, 39);
 
-  static final Color mainButton = Color.fromARGB(20, 0, 0, 0);
+  static final Color mainButton = Color.fromARGB(31, 255, 255, 255);
 }
