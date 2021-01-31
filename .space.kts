@@ -22,6 +22,7 @@ job("Build and deploy compiled app") {
 
     container("occitech/ssh-client") {
         env["IP"] = Params("web_ip")
+        env["USERNAME"] = Params("web_username")
         env["DIR"] = Params("web_dir")
         env["STARTKEY"] = Secrets("web_key_1")
         env["ENDKEY"] = Secrets("web_key_2")
@@ -33,7 +34,7 @@ job("Build and deploy compiled app") {
                 sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----\n/' key.pem
                 echo "-----END OPENSSH PRIVATE KEY-----" >> key.pem
                 chmod 600 key.pem
-                scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem -r $mountDir/share/web/* root@${"$"}IP:${"$"}DIR
+                scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem -r $mountDir/share/web/* ${"$"}USERNAME@${"$"}IP:${"$"}DIR
             """
         }
     }
@@ -45,7 +46,6 @@ job("Build and deploy compiled app") {
         shellScript {
             content = """
                 chmod 777 $mountDir/share/app-release.apk
-                ls -la $mountDir/share/
                 lftp ${"$"}BUILD_USERNAME:${"$"}BUILD_PASSWORD@${"$"}BUILD_IP <<EOF 
                 cd /files
                 lcd $mountDir/share
