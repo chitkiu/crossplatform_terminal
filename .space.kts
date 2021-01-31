@@ -43,5 +43,6 @@ job("Build and deploy web") {
                 quit
                 EOF
                 """
+        }
     }
 }
