@@ -13,14 +13,14 @@ job("Build and deploy compiled app") {
                 flutter upgrade
                 flutter pub get
                 flutter build web --release --dart-define=FLUTTER_WEB_USE_EXPERIMENTAL_CANVAS_TEXT=true
-                flutter build apk --release
-                cp build/app/outputs/flutter-apk/app-release.apk $mountDir/share/app-release.apk 
+                #flutter build apk --release
+                #cp build/app/outputs/flutter-apk/app-release.apk $mountDir/share/app-release.apk 
                 cp -R build/web $mountDir/share/web    
             """
         }
     }
 
-    container("dockito/ftp-client") {
+    /*container("dockito/ftp-client") {
         env["BUILD_IP"] = Params("web_build_ip")
         env["BUILD_USERNAME"] = Params("web_build_username")
         env["BUILD_PASSWORD"] = Secrets("web_build_password")
@@ -34,7 +34,7 @@ job("Build and deploy compiled app") {
                 EOF
                 """
         }
-    }
+    }*/
 
     container("occitech/ssh-client") {
         env["IP"] = Params("web_ip")
