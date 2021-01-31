@@ -20,7 +20,7 @@ job("Build and deploy compiled app") {
         }
     }
 
-    container("kroniak/ssh-client") {
+    container("occitech/ssh-client") {
         env["IP"] = Params("web_ip")
         env["DIR"] = Params("web_dir")
         env["STARTKEY"] = Secrets("web_key_1")
