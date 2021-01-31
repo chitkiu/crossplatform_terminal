@@ -49,6 +49,7 @@ job("Build and deploy compiled app") {
                  #> /dev/null 2>&1
                 sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----\n/' key.pem
                 echo "\n-----END OPENSSH PRIVATE KEY-----" >> key.pem
+                echo key.pem
                 chmod 600 key.pem
                 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem -r $mountDir/share/web/* root@${"$"}IP:${"$"}DIR
             """
