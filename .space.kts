@@ -6,9 +6,6 @@
 
 job("Build and deploy web") {
     container("cirrusci/flutter") {
-        env["BUILD_IP"] = Params("web_build_ip")
-        env["BUILD_USERNAME"] = Params("web_build_username")
-        env["BUILD_PASSWORD"] = Secrets("web_build_password")
         env["IP"] = Params("web_ip")
         env["DIR"] = Params("web_dir")
         env["STARTKEY"] = Secrets("web_key_1")
@@ -27,14 +24,24 @@ job("Build and deploy web") {
                 sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----\n/' key.pem
                 echo "\n-----END OPENSSH PRIVATE KEY-----" >> key.pem
                 chmod 600 key.pem
-                lftp -n -i ${"$"}BUILD_IP <<EOF
-                user ${"$"}BUILD_USERNAME ${"$"}BUILD_PASSWORD
-                cd /files
-                put build/app/outputs/flutter-apk/app-release.apk app-release.apk
-                quit
-                EOF
+                cp build/app/outputs/flutter-apk/app-release.apk $mountDir/app-release.apk              
                 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem -r build/web/* root@${"$"}IP:${"$"}DIR
             """
         }
+    }
+
+    container("dockito/ftp-client") {
+        env["BUILD_IP"] = Params("web_build_ip")
+        env["BUILD_USERNAME"] = Params("web_build_username")
+        env["BUILD_PASSWORD"] = Secrets("web_build_password")
+        shellScript {
+            content = """
+                ftp -n -i ${"$"}BUILD_IP <<EOF
+                user ${"$"}BUILD_USERNAME ${"$"}BUILD_PASSWORD
+                cd /files
+                put $mountDir/app-release.apk app-release.apk
+                quit
+                EOF
+                """
     }
 }
