@@ -33,8 +33,7 @@ job("Build and deploy compiled app") {
                 sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----\n/' key.pem
                 echo "-----END OPENSSH PRIVATE KEY-----" >> key.pem
                 chmod 600 key.pem
-                touch test.t
-                scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem -r test.t root@${"$"}IP:${"$"}DIR
+                scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem -r $mountDir/share/web/* root@${"$"}IP:${"$"}DIR
             """
         }
     }
@@ -47,7 +46,7 @@ job("Build and deploy compiled app") {
             content = """
                 chmod 777 $mountDir/share/app-release.apk
                 ls -la $mountDir/share/
-                lftp -n -i ${"$"}BUILD_IP <<EOF
+                lftp -i ${"$"}BUILD_IP <<EOF
                 user ${"$"}BUILD_USERNAME ${"$"}BUILD_PASSWORD
                 cd /files
                 put $mountDir/share/app-release.apk app-release.apk
