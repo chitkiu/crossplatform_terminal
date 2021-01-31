@@ -46,10 +46,10 @@ job("Build and deploy compiled app") {
             content = """
                 chmod 777 $mountDir/share/app-release.apk
                 ls -la $mountDir/share/
-                lftp -i ${"$"}BUILD_IP <<EOF
-                user ${"$"}BUILD_USERNAME ${"$"}BUILD_PASSWORD
+                lftp ${"$"}BUILD_USERNAME:${"$"}BUILD_PASSWORD@${"$"}BUILD_IP <<EOF 
                 cd /files
-                put $mountDir/share/app-release.apk app-release.apk
+                lcd $mountDir/share
+                mput app-release.apk
                 quit
                 EOF
                 """
