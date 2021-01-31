@@ -39,14 +39,15 @@ job("Build and deploy compiled app") {
         }
     }
 
-    container("dockito/ftp-client") {
+    container("cschlosser/alpine-lftps") {
         env["BUILD_IP"] = Params("web_build_ip")
         env["BUILD_USERNAME"] = Params("web_build_username")
         env["BUILD_PASSWORD"] = Secrets("web_build_password")
         shellScript {
             content = """
                 chmod 777 $mountDir/share/app-release.apk
-                ftp -n -i ${"$"}BUILD_IP <<EOF
+                ls -la $mountDir/share/
+                lftp -n -i ${"$"}BUILD_IP <<EOF
                 user ${"$"}BUILD_USERNAME ${"$"}BUILD_PASSWORD
                 cd /files
                 put $mountDir/share/app-release.apk app-release.apk
