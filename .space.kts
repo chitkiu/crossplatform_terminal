@@ -20,7 +20,7 @@ job("Build and deploy compiled app") {
         }
     }
 
-    container("ubuntu") {
+    container("kroniak/ssh-client") {
         env["IP"] = Params("web_ip")
         env["DIR"] = Params("web_dir")
         env["STARTKEY"] = Secrets("web_key_1")
@@ -38,7 +38,7 @@ job("Build and deploy compiled app") {
         }
     }
 
-    container("ubuntu") {
+    container("dockito/ftp-client") {
         env["BUILD_IP"] = Params("web_build_ip")
         env["BUILD_USERNAME"] = Params("web_build_username")
         env["BUILD_PASSWORD"] = Secrets("web_build_password")
