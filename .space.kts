@@ -5,7 +5,7 @@
 */
 
 job("Build and deploy compiled app") {
-    container("cirrusci/flutter") {
+    /*container("cirrusci/flutter") {
         shellScript {
             content = """
                 flutter channel beta
@@ -18,7 +18,7 @@ job("Build and deploy compiled app") {
                 cp -R build/web $mountDir/share/web    
             """
         }
-    }
+    }*/
 
     /*container("dockito/ftp-client") {
         env["BUILD_IP"] = Params("web_build_ip")
@@ -26,6 +26,7 @@ job("Build and deploy compiled app") {
         env["BUILD_PASSWORD"] = Secrets("web_build_password")
         shellScript {
             content = """
+                chmod 777 $mountDir/share/app-release.apk
                 ftp -n -i ${"$"}BUILD_IP <<EOF
                 user ${"$"}BUILD_USERNAME ${"$"}BUILD_PASSWORD
                 cd /files
@@ -51,7 +52,8 @@ job("Build and deploy compiled app") {
                 echo "\n-----END OPENSSH PRIVATE KEY-----" >> key.pem
                 echo key.pem
                 chmod 600 key.pem
-                scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem -r $mountDir/share/web/* root@${"$"}IP:${"$"}DIR
+                touch test.t
+                scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i key.pem -r test.t root@${"$"}IP:${"$"}DIR
             """
         }
     }
